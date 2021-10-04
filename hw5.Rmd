@@ -1,0 +1,281 @@
+---
+title: "HW5"
+subtitle: "Section 6"
+author: "Joe Margolis"
+date: "Due: Friday, December 4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+library(dplyr) 
+library(readr)
+library(ggplot2)
+library(broom)
+library(ggmosaic)
+source('ggavplot.R')
+# add library statements for other packages you may need
+```
+
+# Instructions
+
+This assignment should be submitted on Moodle by **11:59pm CST on Friday, December 4**. You are welcome to work together on the homework; however, what you submit should be *your* words and *your* code, so we recommend writing it up individually. 
+
+To complete your assignment, please follow these steps: 
+
+1. Download `hw5.Rmd` from Moodle and save it some place on your computer that you can easily find again.
+
+2. Make sure that the file you downloaded is called `hw5.Rmd` and not `hw5.Rmd.txt`.
+
+3. Open `hw5.Rmd` in RStudio.
+
+4. Update the section number and author on the third and fourth lines of the file.
+
+5. Make sure you've already installed the `dplyr`, `readr`, `ggplot2`, `broom`, and `mosaic` packages.
+
+6. Try *Knitting* your document: click the `Knit` button at the top of this screen (look for yarn and needle). 
+
+7. Answer the questions in Parts 1--4. Click `Knit` occasionally along the way to make sure everything looks okay.
+
+8. Once you're done with Parts 1--4, click `Knit` one final time. This will turn your R Markdown document into a nicely formatted HTML file. 
+
+9. Look at the HTML file to make sure it looks like you want it to: graphs appearing, no error messages, no data print out that lasts 50 pages, etc.
+    
+10. Once your HTML file pops up and you've checked that it looks like what you want, click `Open in Browser` and then Print and select "Save as pdf".
+
+11. Turn in two files to Moodle: this `.Rmd` file, and the knitted `.pdf` version you generated in Step 10.
+
+
+
+# Part 1. Revise Project based on Feedback
+
+In this part, you will revise your project based on feedback from HW1--HW4. Note that the questions below may differ slightly from the questions that we asked on HW4: please **read the questions carefully**, and **do not simply copy/paste answers from HW4** into this assignment unless you have confirmed that the question is exactly the same.
+
+
+
+## Question 1 (Load Data)
+
+Use the code chunk provided below to read your data set into R. *You should use the same dataset you used in HW2--HW4.*
+
+```{r load-data}
+CollegeScores <- read_csv("Scorecard.csv")
+head(CollegeScores)
+
+CollegeScores <- CollegeScores %>%
+  mutate(raceSchool = (HBCU + PBI + ANNHI + TRIBAL + AANAPII + HSI + NANTI) > 0)
+
+CollegeScores <- CollegeScores %>% 
+  mutate(WageCat = cut(MD_EARN_WNE_P6, breaks=c(9100, 24600, 29300, 35900, 120500), labels=c("Low Quartile Wage ($9100-24600)","Low-Mid Quartile Wage ($24600-29300)","High-Mid Quartile Wage($29300-35900)","High Quartile Wage ($35900-120500")))
+
+CollegeScores <- CollegeScores %>%
+  mutate(degree = as.factor(PREDDEG))
+
+CollegeScores <- CollegeScores %>%
+  left_join(data.frame(region = state.region, STABBR = state.abb))
+
+
+```
+
+
+
+## Question 2 (Revise Final Report)
+
+Based on the feedback you received on HW4, make adjustments and edits to the following sections on your **Final Report Google Doc**:
+
+- Introduction to Data
+- Limitations
+
+
+
+## Question 3 (Add to Report Introduction)
+
+In your Final Report Google Doc, start drafting the remaining two sections of the Introduction:
+
+- **Introduction to Topic:** In paragraph form, introduce the overall motivation for your investigations. This should be brief, but it should hook the reader and motivate the **Research Questions** section that follows.
+
+- **Research Questions:** In paragraph form, discuss the **two (2) research questions** that you will be investigating (one involving a quantitative outcome, the other involving a related binary outcome). Explain why you think these are interesting questions and how they are related to one another (e.g., what is the overall goal?). For each research question, you should also provide justification for all variables (including at least two explanatory variables per question) that you will be considering in your analysis.
+
+
+
+## Question 4 (Update Multiple Linear Regression Model Notes)
+
+We are going to continue our pause on developing your multiple linear regression model this week. But, you should spend some time adding to, changing, or otherwise revising your notes about this model so that you are prepared to perform the final model selection next week. These notes do not need to be in complete sentences. These notes are mostly for you but also provide the instructor an opportunity to comment on your plan. 
+
+In your Final Report Google Doc, update the following sections, as needed (based on feedback you received on HW4 as well as other ideas you generate this week):
+
+**Variable Descriptions:**
+
+- write down your quantitative outcome variable and its units; note any transformations you did or want to do on that outcome variable
+- write down a descriptive name (not just the R variable name) for each of your predictor variables that you are going to consider for your model and their form (units if quantitative, categories if categorical); note any transformations you did or want to do on those variables
+
+**Sample Description:**
+
+- write down any filtering that you performed for your visualization and model fitting 
+- note how many rows (after filtering) have non-missing values for your outcome variable
+
+**Visualization:**
+
+- write down what type of plot you want to create to compare your 2-3 variables of interest; note how each variable will be incorporated into the visual (x-axis? y-axis? different colors? separate panels of the plot?)
+- note what features of the plot you will discuss in your description
+
+**Model Selection:**
+
+- note brief thoughts you have about improving the model: interaction term needed? what variables might you consider adding in the future? etc.
+
+**Model Evaluation:**
+
+- write down which graphical and/or numerical summaries you will create and interpret to check how well the conditions of the final model are satisfied
+- write down which graphical and/or numerical summaries you will create and interpret to evaluate how good your final model is 
+
+
+## Question 5  (Multiple Logistic Regression Model Notes)
+
+This week, we are also going to pause on developing your multiple logistic regression model. But, like you have been doing with your linear regression model, we want you to write down thoughts and ideas for your logistic model so that you have detailed notes for when you return to performing model selection next week. These notes do not need to be in complete sentences. These notes are mostly for you but also provide the instructor an opportunity to comment on your plan. 
+
+Based on the feedback you received on HW4, and any other ideas you think of this week, create bullet point notes in your Final Report Google Doc (now in the Multiple Logistic Regression Model Section) for the following sub-sections:
+
+**Variable Descriptions:**
+
+- write down your binary outcome variable and note what each of the categories represents; write down how you created that variable and note any modifications you want to explore (if any)
+- write down the descriptive name for each of your predictor variables and their form (units if quantitative, categories if categorical); note any transformations you did or want to do on those variables
+
+**Sample Description:**
+
+- write down any filtering that you performed for your visualization and model fitting
+- note how many rows (after filtering) have non-missing values for your outcome variable
+
+**Visualization:**
+
+- write down what type of plot you want to create to compare your 2-3 variables of interest; note how each variable will be incorporated into the visual (x-axis? y-axis? different colors? separate panels of the plot?)
+- note what features of the plot you will discuss in your description
+
+**Model Selection:**
+
+- note brief thoughts you have about improving the model: would you like to try adding an interaction term between your two explanatory variables? what other variables might you consider adding in the future? etc.
+
+**Model Evaluation:**
+
+- write down which graphical and/or numerical summaries you will create and interpret to evaluate how good your final model is 
+
+
+
+# Part 2. New Project Tasks
+
+## Question 1 (Bootstrapping for Linear Regression)
+
+Edit the code below to create and visualize the bootstrap sampling distribution for one slope coefficient of interest from your multiple linear regression model. Describe the bootstrap sampling distribution and what information it provides. 
+
+```{r bootstrap-linear-model}
+# 500 bootstrap samples
+boot_CollegeScores_linear <- mosaic::do(500)*(
+  CollegeScores %>% # REPLACE data with the name of your data set
+  # ADD code for filtering if needed
+  sample_frac(replace = TRUE) %>% # re-sample from your sample
+  with(lm(MD_EARN_WNE_P6 ~ region + degree )) # REPLACE ... to fit your multiple linear regression model (your "best" model from HW3)  
+)
+
+# look at bootstrap estimates (and variable names)
+head(boot_CollegeScores_linear)
+
+# visualize the bootstrap sampling distribution for **one** slope coefficient of interest
+boot_CollegeScores_linear %>%
+  ggplot(aes(x = regionNorth.Central )) + # REPLACE ... with a variable in boot_data_linear to visualize **one** slope coefficient
+  geom_histogram() +
+  theme_classic()
+  
+```
+
+> The shape of the visualization is unimodal and pretty symmetric.  The center of this spread suggests an average slope coefficient to represent the change in median wage six years after enrollment when going from a school in the northeast to a school in the Midwest region of the United States can be represented asa decrease of a little less thab $2,000.  The spread of this model ranges from a decrease in over $3,000 to actually a possibility of a slight increase in salary when going from a northeast school to a midwest.
+
+> While I do not yet have the confidence interval, it seems pretty apparent from this model that a 0 slope will not be included as the heavy majority of the values shown in te histogram are well below 0.  This model suggests a negative relationship in a person's median salary six years after enrollment if a student goes from a northeastern school to a midwest school.
+
+
+
+## Question 2 (Standard Errors for Linear Regression)
+
+Edit the code below to calculate the standard error for a slope coefficient of interest from your multiple linear regression model above using both methods: bootstrap SE and the classical/theoretical SE from the model output. Describe what information the standard error provides. 
+
+```{r se-linear-model}
+# bootstrap SE
+boot_CollegeScores_linear %>% 
+  summarize(sd(regionNorth.Central)) # REPLACE ... with variable name in boot_data_linear to calculate the SD of the bootstrap estimates for your coefficient of interest
+
+# classical/theoretical SE
+mod_lm <- CollegeScores %>% # REPLACE data with the name of your data set
+  # ADD code for filtering if needed
+  with(lm( MD_EARN_WNE_P6 ~ region + degree )) # REPLACE ... to fit your multiple linear regression model (your "best" model from HW3) 
+
+tidy(mod_lm)
+```
+
+> The standard error estimates tell us that for each of the estimates of coefficients given, there is a 68% that the true coefficient value is within the range of the standard error estimate above and below the estimate calculated from the bootstrap sample.
+
+
+
+## Question 3 (Confidence Intervals for Linear Regression)
+
+Edit the code below to create a 95% confidence interval for a slope coefficient of interest from your multiple linear regression model above using ***both*** methods: bootstrap percentile confidence interval and the classical/theoretical confidence interval from the model output. Interpret one of the intervals. In your interpretation, note if slope = 0 is in your interval of plausible values.
+
+```{r CI-linear-model}
+# bootstrap percentile CI
+boot_CollegeScores_linear %>% 
+  summarize(lb = 0.025, ub = 0.975) # REPLACE ...  to get the bootstrap percentile CI for your coefficient of interest
+
+# classical/theoretical CI
+confint(mod_lm)
+```
+
+> regionNorth Central: We are 95% confident that the true change in median wage six years after enrollment for a student in a midwest school is between $2,629.6691 and $826.0138 less than a student from a northeastern school, holding the predominant degree of the schools constant.
+
+
+
+
+## Question 4 (Confidence Intervals for Logistic Regression)
+
+Calculate a 95% confidence interval for a slope coefficient of interest from your multiple logistic regression model (from HW4) using *one* of the two methods: bootstrap percentile confidence interval or the classical/theoretical confidence interval from the model output. Interpret the intervals; make sure the endpoints of the intervals are in the *exponentiated* form. In your interpretation, note if odds ratio = 1 is in your interval of plausible values.
+
+```{r CI-logistic-model}
+mod2 <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree, family = binomial))
+
+mod2 %>%
+  confint()%>%
+  exp()
+
+```
+
+>  We are 95% confident that the true odds of a school being a minority serving institution whose predominant degree awarded is an associates degree is between 1.47 and 2.48 times greates than a school whose predominant degree awarded is a certificate degree, holding the median wage six years after enrollment for that school constant.
+
+
+
+# Part 3. Self-reflection
+
+After you have finished the assignment, take 5 minutes to think and 10 minutes to free-write in reaction to the following prompts. You do not need to answer every question listed below, but use these questions to guide your writing.  
+
+Look back at the course and life goals you wrote in HW1, and reflect on week 5 of this course.
+
+  * How are you doing?
+  * Does the work above reflect your learning?
+  * What was the biggest obstacle for your learning this week?
+  * What might you do differently next week? What do you need (from instructor, others, yourself) to do that next week?
+  * In what ways are you are creating a positive learning environment for everyone in the class? Discuss.
+  * Evaluate the other aspects of your course engagement with respect to the provided rubric. Do you think it meets expectations? Do you feel as though you are demonstrated plus-level engagement in any areas?
+  * Evaluate your project work (Parts 1 and 2) with respect to the provided rubric. Do you think it meets expectations? Do you feel as though you mastered any of the learning objectives yet? 
+  
+
+>   I feel like I am really starting to hit a groove and am starting to retain the informatioin from this unit much better than the last few.  This has been the most interesting unit to me because it feels like it is much more about the real life interpretations of our data, not that real life interpretations was not a big part before, but it seems like this unit is all interpretation while the other units had a lot of memorization of different types of plots and variables and how to use them for the models, which took more time to really stick with me than this unit has.  This assignment obviously reflects my learning because we learned about bootstrapping and confidence intervals, which is all that was done on this homework besides revisions of old work.
+  Another thing I have started to do better this week, that I think I could implement more probably if needed, which I assume it will, is using the slack channel to look through and find questions similar to ones I have.  This is particularly useful for rstudio stuff where now I can go through the slack and find similar questions or ask my own when I get stuck in r of the homeworks, rather than just throwing in the towel and calling it a day until the next time I can hopefully join office hours.
+
+
+
+
+# Part 4. Partner Check in
+
+During this time of social distancing, we need to be proactive in initiating and maintaining connections with others. To that end, you will be paired with another student in the class to do an informal weekly check-in with each other. You may do this over email, on Zoom, or from > 6 feet apart (after Quiet Period), and it doesn't need to be long. This provides you an opportunity to connect with someone and support one another during this time. 
+
+**Suggestions: share your favorite song/album/musical artist, or something you've been listening to lately.** 
+
+All you need to report here is whether or not you were able to connect with your partner. If this starting to feel like a burden, let me know. 
+
+> KEEP RELEVANT TEXT (AND DELETE THE REST): "Checked In"
+

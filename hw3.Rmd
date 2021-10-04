@@ -1,0 +1,297 @@
+---
+title: "HW3"
+subtitle: "Section 6"
+author: "Joe Margolis"
+date: "Due: Friday, November 20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+library(dplyr) 
+library(readr)
+library(ggplot2)
+library(broom)
+library(ggmosaic)
+source('ggavplot.R')
+# add library statements for other packages you may need (e.g., ggmosaic, NHANES)
+```
+
+# Instructions
+
+This assignment should be submitted on Moodle by **11:59 pm CST on Friday, November 20**. You are welcome to work together on the homework; however, what you submit should be *your* words and *your* code, so we recommend writing it up individually. 
+
+To complete your assignment, please follow these steps: 
+
+0. **Download R and RStudio (if you haven't already).** See the *R and RStudio* section on Moodle for installation links and videos with step-by-step installation instructions. If you're having issues with this, you'll need to reach out to your instructor and/or come to office hours, so plan accordingly!
+
+1. **Download `hw2.Rmd` from Moodle and save it some place on your computer that you can easily find again.** We strongly encourage you to create a new folder dedicated to homework assignments for this class. See the *File Structure and Organization* video on Moodle for tips on how to do this.
+
+2. **Make sure that the file you downloaded is called `hw2.Rmd` and not `hw2.Rmd.txt`.** The latter often happens when you use Safari on a Mac---try downloading the file using a different browser (e.g., Chrome) instead, or edit the file name (as explained in the *File Structure and Organization* video).
+
+3. **Open `hw2.Rmd` in RStudio.** See the *Intro to R and RStudio*, *R Data Types*, and *R Error Messages and Troubleshooting* videos. 
+
+4. **Update the section number and author** on the third and fourth lines of the file.
+
+5. **Make sure you've already installed the `dplyr`, `readr`, `ggplot2`, and `broom` packages.** Open the `Packages` panel (usually in the bottom right corner) to see the list of all packages that are already installed. Look to see if `dplyr`, `readr`, `ggplot2`, and `broom` are listed here. If they're on this list, that means they're already installed and you're good to go.  If any packages are missing from this list, type `install.packages('packagename')` in the *Console* (usually in the bottom left corner) and hit enter. See the *R Packages* video.
+
+6. **Try *Knitting* your document:** click the `Knit` button at the top of this screen (look for yarn and needle). See the *Intro to RMarkdown* video. A dialogue box may pop up asking you if you want to install some packages: click "Yes." If you encounter any error messages, get in touch with your instructor or the preceptors.  
+
+7. **Answer the questions in Parts 1--4.** Click `Knit` occasionally along the way to make sure everything looks okay.
+
+8. Once you're done with Parts 1--4, **click `Knit` one final time.** This will turn your R Markdown document into a nicely formatted HTML file. 
+
+9. **Look at the HTML file to make sure it looks like you want it to**: graphs appearing, no error messages, no data print out that lasts 50 pages, etc.
+    
+10. Once your HTML file pops up and you've checked that it looks like what you want, **click `Open in Browser` and then Print and select "Save as pdf".** 
+
+11. **Turn in two files to Moodle:** this `.Rmd` file, and the knitted `.pdf` version you generated in Step 10.
+
+
+
+# Part 1. Revise Project based on Feedback
+
+In this part, you will have the opportunity to update, revise, and address the feedback that you received on HW2. Note that the questions below may differ slightly from the questions that we asked on HW2: please **read the questions carefully**, and **do not simply copy/paste answers from HW2** into this assignment unless you have confirmed that the question is exactly the same.  
+
+
+## Question 1 (Load Data)
+
+Use the code chunk provided below to read your data set into R. *You should use the same dataset you used in HW2.*
+
+```{r load-data}
+CollegeScores <- read_csv("Scorecard.csv")
+head(CollegeScores)
+```
+
+
+## Question 2 (Start Final Report)
+
+This week, you will start putting together your final report. 
+
+1. Make a copy of this [Final Report Template](https://docs.google.com/document/d/1mXIMnmU1QMbWRZ34OJ1JeMBUYdWhzv4BuvwUes9gpTA/edit?usp=sharing) 
+
+2. Share the document with your instructor with editing access.
+
+3. Update the title, section number, and author name.
+
+
+## Question 3 (Introduction to Data)
+
+In your Final Report Google Doc, start drafting the Introduction Section. For this week, focus on the **Introduction to Data: ** in paragraph form, introduce the data by describing the *data context* (e.g., who, what, where, when, how, why, by whom, ...), the *sampling method*, and the *study design*. Take material from P1Q2 and P1Q3 from HW2.
+
+**Type your answers into the appropriate section of your Final Report Google Doc,** rather than typing them into this R Markdown file.
+
+
+## Question 4 (Limitations)
+
+In your Final Report Google Doc, start drafting the final part of your report---the **Limitations** in the Conclusions Section. In paragraph form, you should discuss the limitations of this dataset and its ability to answer your research questions. In particular, discuss any biases that might be present in the data as well as any issues with the data context, sampling methods, or study design, and how they may impact your analysis and/or the conclusions you might be able to draw. Lastly, discuss the potential benefits and harms from this data being collected, this data being publicly available, and the potential ways you might use the data. Take material from P1Q2--P1Q5 from HW2. 
+
+As above, **type your answers into the appropriate section of your Final Report Google Doc,** rather than typing them into this R Markdown file.
+
+
+
+# Part 2. New Project Tasks
+
+
+## Question 1 (Research Question)
+
+Write down a research question that involves a quantitative outcome variable and one explanatory variable (either categorical or quantitative---you pick). Explain why you think this is an interesting research question; give us motivation for your research question. Choose one of the models from HW2. 
+
+> Is there a relationship between a school's latitudinal location and their median income six years after enrollment in their school?  This question is interesting because it stimulates other questions about the education system in America as a whole and if there is inequity in the location of the schools that best prepare for adulthood and where those inequities may be most prominent. 
+
+
+## Question 2 (Add Variable)
+
+Pick a third variable to add to your linear model; this could be the other explanatory variable from HW2. Explain why you want to add this variable to your model (e.g., confounding, effect modification, precision, etc).
+
+> Longitude should also be included in this model as it is a precision variable that can give even more insight into the exact location of each school and how specific regions of the country may or may not have better access to schools than other areas.
+
+
+## Question 3 (Visualization)
+
+Create a visualization (update from HW2) to incorporate this third variable. (If you have two quantitative explanatory variables, make one of them categorical using the `cut()` function to incorporate it into the visualization). Then, in a brief paragraph, thoroughly describe what information you gain from the visualization. You may use numerical summaries in your paragraph to fully describe your visualization. 
+
+```{r summarize-Y-vs-X1-and-X2}
+CollegeScores <- CollegeScores %>% 
+  mutate(LongCat = cut(LONGITUDE, breaks=c(-160, -97.16716, -86.17311, -78.63770, -64), labels=c("Far West","West","Midwest","East")))
+CollegeScores %>%
+  ggplot(aes(color = LongCat, x = LATITUDE, y = MD_EARN_WNE_P6)) + 
+  geom_point() + 
+  labs(x = "Latitude", y = "Median Income of Student 6 Years After Enrollment (USD)", title = "Expected Income vs. North/South Location in America") +
+  theme_minimal()
+
+```
+
+>   This scatterplot displays a very weak, positive relationship between the latitude of a school, which as latitude increases it means the school is further north, and test scores.  When looking east to west for the schools though it is much tougher to notice any relationship as the data seems to vary heavily.  The outliers for the median incomes reside above the majority of the data sets and are schools that are further north but covers all  the east west regions excluding the midwest.  The latitude outliers come on both sides, the southern outliers representing islandic territories like Puerto Rico and Guam, along with Hawaii, while the northern outliers represent Alaskan schools.  Both of the latitude outlier groups seem to show average to below average median wages for alumnus, meaning that the majority of the top schools are likely in the continental U.S. 
+
+
+## Question 4 (Multiple Linear Model: Creation)
+
+Considering the relationship between the three variables you set out above, make and justify appropriate transformations to the variables (e.g. power transformations, using a categorical version of a quantitative variable if needed). If needed, filter the dataset to exclude extreme outliers.
+
+```{r transformations-second-model}
+CollegeScores <- CollegeScores %>%
+  mutate(centeredLat = LATITUDE - mean(LATITUDE))
+CollegeScores <- CollegeScores %>%
+  mutate(centeredLong = LONGITUDE - mean(LONGITUDE))
+```
+
+Then, write out the notation for a linear model (no interaction terms for now), replacing the ... with variable names and $\beta$s.
+
+$$E[Median Income 6 Years After Enrollment |CenteredLat, CenteredLong] = \beta_0 + \beta_1(Nor + \beta_2(centeredLong)$$
+Third, justify this choice of model.
+
+>   This model makes sense (if not including interaction terms) because it will give us first an intercept $\beta_0$ which tells us the average median income six year after enrollment for a school with a centered latitude and a centered longitude of 0, which in this context would be a school in the center on America.  Then the coefficient for centeredLat tells the average increase in wage if the centered latitude is increased by 1 degree or moved 1 degree north of the center point in America.  The same would be the case for the centered longitude which tells the average increase in median wage as you move west to east.
+
+
+## Question 5 (Multiple Linear Model: Fit, Present Estimates)
+
+Fit your multiple linear regression model to the data using `lm()`, and print out the coefficients.
+
+```{r mutiple-linear-model}
+CollegeScores <- CollegeScores %>%
+  left_join(data.frame(region = state.region, STABBR = state.abb))
+
+CollegeScores <- CollegeScores %>%
+  mutate(degree = as.factor(PREDDEG))
+
+CollegeScores %>%
+  count(region)
+
+mod1 <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree))
+coef(mod1)
+```
+
+## Question 6 (Multiple Linear Model: Interpretation)
+
+Interpret all of the coefficients in your model using full, good sentences (see the grading rubric for requirements for interpretations).
+
+>   The intercept of 31,182.248334 represents the average median wage earned 6 years after enrollment of $31,182.25 at a college that is located at the center of America, with a centered longitude and centered latitude of 0.  The centeredLat coefficient of 391.913933 represents the average increase in median wage six years after enrollment of $391.91 if a school moved one degree north from that center point in America.  Finally the centeredLong coefficient of 9.610438 represents the average increase in that same median wage of $9.61 if a school is moved one degree degree east from that center point in America.
+
+
+## Question 7 (Multiple Linear Model: Check Conditions)
+
+Does the model that you fit meet all linear model conditions (straight enough relationships between quantitative variables, equal spread in residuals, no extreme outliers)? Provide graphical and/or numerical evidence to support your response.
+
+```{r check-conditions}
+
+
+```
+
+> Straight enough: The data does seem to be straight enough, but the splope for the longitude residual seems to be flat which could mean that variable is redundant
+
+> Equal spread: There is not an equal spread as median incomes above the predicted value seem to have substantially more variance than below.
+
+> Outliers: When there are outliers, which there seem to be quite a few, they all seem to be on the side of higher median salary compoared the majority of the data with no outliers below
+
+> Takeaway message: Longitude may be a redundant variable that could be left out of this model, but there does seem to be a relationship between latitude and wage
+
+## Question 8 (Multiple Linear Model: Evaluation)
+
+Is your model a "good" model? Provide graphical and/or numerical evidence to support your response. Make sure to consider redundancy in your evaluation. 
+
+```{r evaluate}
+summary(mod1)
+confint(mod1)
+```
+
+> $R^2$: The $R^2$ value is 0.04527 which tells us that most of the data is around a whole standard deviation away from the predicted median wage.
+
+> Residual standard error: The residual standard error is 10120 on 3334 degrees of freedom which means that on average you can expect that the predicted median wage six years after enrollment of a school will be up to $10,120 above of below the actual wage value.
+
+> Redundancy: In the added variable plot looked at previously it seems as if there may be some redundancy on the longitude variable as the slope is minimal.
+
+> Takeaway message: This is a poor model because it has an extremely low $R^2$ value and a better model would have that closer to one.
+
+
+## Question 9 (Interaction Model: Creation)
+
+Update your model from Q4 to include an interaction between your two explanatory variables. If you have two quantitative explanatory variables, make one of them categorical using the `cut()` function. Write out the notation for this new linear model, and justify your choice of model.
+
+$$E[Median Income 6 Years After Enrollment |CenteredLat, CatCenteredLat] = \beta_0 + beta_1(centeredLat) + \beta_2(CenteredWest) +\beta_3(CenteredMidwest) + \beta_4(CenteredEast) + \beta_5(CenteredWest)(centeredLat) + \beta_6(CenteredMidwest)(centeredLat) + \beta_7(CenteredEast)(centeredLat)$$
+
+>   This model makes sense because it not only looks at how you move throughout the country on only a west and east axis, but by making longitude a categorical variable separated by regions, it allows to focus on each region and look at how schools may improve or become worse at leading towards high salaries after enrollment as moving north in each region.
+
+
+## Question 10 (Interaction Model: Fit, Present Estimates)
+
+Fit your interaction model to the data using `lm()`, and present the coefficient estimates.
+
+```{r}
+quantile(CollegeScores$centeredLong)
+```
+
+
+```{r linear-model-with-interaction}
+
+mod2 <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + (region * degree)))
+coef(mod2)
+```
+
+
+## Question 11 (Interaction Model: Interpretation)
+
+Interpret all of the coefficients in your model using full, good sentences (see the grading rubric for requirements for interpretations).
+
+> Intercept: The intercept represents the average median wage six years after enrollment which is $30,930.51, for a school in the far west region of America and is in the middle of America north/south wise.
+centeredLat: This coefficient of -16.44 represents the average decrease in median wage six years after enrollment for a school in the far west region of America of $16.44 if they move north one degree in centered latitude.
+CatCenteredLongWest: This coefficient of $344.15 represents the average increase in median wage six years after enrollment for a school in the west region compared to a school in the far west region, holding the latitude constant.
+CatCenteredLongMidwest: This coefficient of $-1102.30 represents the average increase in median wage six years after enrollment for a school in the midwest region compared to a school in the far west region, holding the latitude constant.
+CatCenteredLongEast: This coefficient of $1026.05 represents the average increase in median wage six years after enrollment for a school in the east region compared to a school in the far west region, holding the latitude constant.
+centeredLat:CatCenteredLongWest: This coefficient of $327.83 represents the average increase in median wage six years after enrollment from a school in the west region if the centered latitude of the school increases one degree.
+centeredLat:CatCenteredLongMidwest: This coefficient of $232.48 represents the average increase in median wage six years after enrollment from a school in the midwest region if the centered latitude of the school increases one degree.
+centeredLat:CatCenteredLongEast: This coefficient of $840.13 represents the average increase in median wage six years after enrollment from a school in the west region if the centered latitude of the school increases one degree.
+
+
+## Question 12 (Model Selection)
+
+Compare your model in Q10 to your model in Q5. Which one do you think is better? Provide graphical and/or numerical evidence to support your response, as needed.
+
+```{r}
+summary(mod2)
+confint(mod2)
+```
+
+> While the second model still has room for improvement, making longitude an interactiuon variable definitely improved the accuracy of the model compared to the first model which left longitude as a quantitative variable.  This can be seen by th efact that the $R^2$ has nearly doubled from about 0.045 to 0.08498 in this model.  This means that more of the data falls within one standard deviation of the median wage predicted by the model, meaning that they are closer to correct predictions.  Also the residual standar error decreased to 9,911 meaning that each prediction is likely only off by $9,911 as opposed to $10,120 as it was in the previous model.
+
+
+```{r}
+CollegeScores %>%
+  ggplot(aes(y = MD_EARN_WNE_P6, x = degree, color = region)) +
+  geom_boxplot() +
+  labs(y = "Median Wage 6 Years After Enrollment (U.S.$)", x = "Predominant Degree Earned") +
+  theme_minimal()
+```
+
+
+# Part 3. Self-reflection
+
+After you have finished the assignment, take 5 minutes to think and 10 minutes to free-write in reaction to the following prompts. You do not need to answer every question listed below, but use these questions to guide your writing.  
+
+Look back at the course and life goals you wrote in HW1, and reflect on week 3 of this course.
+
+  * How are you doing?
+  * Does the work above reflect your learning?
+  * What was the biggest obstacle for your learning this week?
+  * What might you do differently next week? What do you need (from instructor, others, yourself) to do that next week?
+  * Think about ways that you are creating a positive learning environment for everyone in the class. Discuss them.
+  * Evaluate your project work (Parts 1 and 2) with respect to the provided rubric. Do you think it meets expectations? Do you feel as though you mastered any of the learning objectives yet? 
+  
+
+>   I am still doing well.  This last week we learned a lot about different types of variables including indicator variables, confounders, colliders, modifiers, etc. and how those variables can be included into models and visualizations in order to more accurately portray what a data set is telling us contextually.  This was included in my work on  the first visualization of this assignment when I included the precision variable of longitude to add to my plot about latitude, that way my results can be broken up into regions of the country as opposed to just north vs. south, which contextually does not make sense as it would be misleading to put a school in Washington for example in the same group as a New York school when talking about inequities in location of top schools for preparing for the job market and earning a high salary post graduation.  
+  In this class I have tried to create a positive learning environment by being unafraid to speak up during lulls in the conversation in breakout groups.  The biggest issue with breakout groups comes when as a group a question is finished but the group as a whole is unsure if everyone else is ready to move on.  A lot of times it can feel weird to be the one to ask whether or not everyone else is ready as it can feel a little pushy and impatient if others are not there yet, but I try to be the one to speak up in a respectful if I feel like people seem ready to get the group moving and hopefully be able to finish the activity. 
+
+
+
+# Part 4. Partner Check in
+
+*During this time of social distancing, we need to be proactive in initiating and maintaining connections with others. To that end, you will be paired with another student in the class to do an informal weekly check-in with each other. You may do this over email, on Zoom, or from > 6 feet apart (after Quiet Period), and it doesn't need to be long. This provides you an opportunity to connect with someone and support one another during this time.* 
+
+**Suggestions: Share something that you are looking forward to. Share something that you've struggled with this week.** 
+
+All you need to report here is whether or not you were able to connect with your partner. If this starting to feel like a burden, let me know. 
+
+> KEEP RELEVANT TEXT (AND DELETE THE REST): "Checked In"
+

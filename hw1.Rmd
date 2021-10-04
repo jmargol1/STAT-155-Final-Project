@@ -1,0 +1,225 @@
+---
+title: "HW1"
+subtitle: "Section 6"
+author: "Joe Margolis"
+date: "Due: Friday, November 6"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+#install.packages('dplyr','readr','ggplot2')
+library(dplyr) 
+library(readr)
+library(ggplot2)
+```
+
+# Instructions
+
+This assignment should be submitted on Moodle as a pdf document by 11:59pm CST on Friday, November 6. You are welcome to work together on the homework; however, what you submit should be your words and your code, so we recommend writing it up individually. 
+
+
+# Part 1. Create and knit an R Markdown file 
+
+We will use `R` and `RStudio` extensively throughout the module, so for this homework assignment I want to make sure that you are able to use `R Markdown` to generate a nicely formatted, reproducible .pdf document containing your homework solutions. 
+
+To complete your assignment, please follow these steps: 
+
+0. Download R and RStudio (if you haven't already). See the *R and RStudio* section on Moodle for installation links and videos with step-by-step installation instructions. **Get started on this part as soon as possible.** If you get stuck, you'll need to reach out to your instructor and/or come to office hours, so plan accordingly!
+
+1. Download `hw1.Rmd` from Moodle and save it some place on your computer that you can easily find again (i.e., NOT in your Downloads folder). **I strongly encourage you to create a new folder dedicated to homework assignments for this class.** See the *File Structure and Organization* video on Moodle for tips on how to do this.
+
+2. Make sure that the file you downloaded is called `hw1.Rmd` and not `hw1.Rmd.txt`. The latter often happens when you use Safari on a Mac---try downloading the file using a different browser (e.g., Chrome) instead, or edit the file name (as explained in the *File Structure and Organization* video).
+
+3. Open `hw1.Rmd` in RStudio. See the *Intro to R and RStudio*, *R Data Types*, and *R Error Messages and Troubleshooting* videos. 
+
+4. Update the section number and author on the third and fourth lines of the file. 
+
+5. Install the `dplyr`, `readr`, and `ggplot2` packages. Depending on how far you've made it in the lecture videos, you might have installed some of these packages already. Open the `Packages` panel (usually in the bottom right corner) to see the list of all packages that are already installed. Look to see if `dplyr`, `readr`, and `ggplot2` are listed here. If they're on this list, that means they're already installed and you're good to go.  If any packages are missing from this list, type `install.packages('packagename')` in the *Console* (usually in the bottom left corner) and hit enter. See the *R Packages* video. 
+
+6. Try *Knitting* your document: click the `Knit` button at the top of this screen (look for yarn and needle).
+    - See the *Intro to RMarkdown* video. 
+    - A dialogue box may pop up asking you if you want to install some packages: click "Yes"
+    - If you encounter any error messages, get in touch with your instructor or the preceptors.  
+
+7. Answer the questions in Parts 2--5. Click `Knit` occasionally along the way to make sure everything looks okay.
+
+8. Once you're done with Parts 2--5, click `Knit` one final time. This will turn your R Markdown document into a nicely formatted HTML file. Look at the file to make sure it looks like you want it to (graphs appearing, no R code errors, no data print out that lasts 50 pages, etc.).
+    
+9. Once your HTML file pops up and you've checked that it looks like what you want, click `Open in Browser` and then Print and select "Save as pdf". You will upload the pdf to Moodle.
+
+To get credit for this problem, turn in two files to Moodle: this `.Rmd` file, and the knitted `.pdf` version you generated in Step 9. 
+
+
+# Part 2. Background survey 
+
+I want to know a little more about you! Please answer the following questions. Note that there are no "correct" answers to the questions: you'll get credit as long as you put effort into answering each question.
+
+a. What is your preferred name (and, if you'd like to share, what are your pronouns)? Please write a short pronunciation guide for you name (e.g., spell it out phonetically, tell me what it rhymes with, ...).
+
+> My name is Joseph Margolis but you can just call me Joe, the normal way you pronounce Joe. Margolis is pronounced the first part Marg like you say "mar" in margarita, then go is pronounced like the word "go" and then lis like "list" without the t. My pronouns are he/him/his.
+
+
+b. What is your year at Macalester?
+
+> Sophomore year
+
+
+c. What is (are) your major(s) and minor(s)? If you haven't declared yet, let me know what your passions are right now!
+
+> I have not declared but I am expecting to major in Applied Math and minor in Computer Science
+
+
+d. What are your career and/or post-graduation ideas or goals? 
+
+> Would love to do stats for a sports team but really I have no idea
+
+
+e. Have you taken any previous statistics courses? If so, which classes have you taken and when did you take them?
+
+> I took AP statistics my senior year of high school
+
+
+f. Do you have any other prior experience with statistics (e.g., a class in another department, job, research)?
+
+> Just my AP Stats class
+
+
+g. Do you have any previous computing experience (e.g., Excel, R, Stata, Matlab, C, Python)? If so, in what context?
+
+> I took AP Computer Science in high school and Comp 123 here, both of which worked with Python.  I have also taken Calc 1 and Linear Algebra which work with Rstudio, and Calc 2 which works with Mathematica 
+
+
+h. Why are you taking this course? What are you hoping to learn/gain from this class? 
+
+> I am very interested in stats and think it might be a good career path for me
+
+
+i. What do you do when you're not in class? (e.g., are you an athlete? in a musical ensemble? involved in any campus organizations? board game enthusiast?)
+
+> I play baseball and hang with friends
+
+
+j. Is there anything else you would like me to know about you?
+
+> Just learning wise it has been tough for me to keep my focus while taking classes online, I have gotten better this semester but it is definitely not easy for me
+
+
+
+# Part 3. Project
+
+## Question 1 
+
+Look through the information for the possible project data sets on Moodle. Choose one data set to work with. Then, use the code chunk provided below to read your chosen data set into R and look at the `head()` of the data set (i.e., the first six rows). *You can change your mind about the data set for HW 2, but after that, you'll primarily be working with that same data set for the remaining weekly assignments. So, make sure to choose a data set that seems interesting to you!*
+
+```{r}
+CollegeScores <- read_csv("Scorecard.csv")
+head(CollegeScores)
+```
+
+For your chosen data set, describe how many cases there are in the data set, explain what the cases represent, and describe how many variables there are in the data set. Then, choose 10 variables that are interesting to you, list them here, classify each of these 10 variables as either quantitative or categorical, and explain why you classified them in that manner.
+
+> Cases (Who): There are 3,676 cases which each represent a different college
+
+> Variables (What): There are 93 variables which each represent a different score or something that people might look at for schools
+
+
+## Question 2 
+
+For your chosen data set, use the information provided to describe the context surrounding the data (where was this data collected, when was this data collected, how was this data collected, by whom was this data collected, why was this data collected). 
+
+> Where: Colleges and Universities in the United States and territories of the U.S.
+
+> When: Last updated June 1, 2020
+
+> How: This data came from federally reported information from schools, information of student loans and financial aide, and tax information from the schools
+
+> By whom: The data was collected by the U.S Department of Education
+
+> Why: To give information about schools to prospective students
+
+
+## Question 3
+
+For your chosen data set, consider the ideal population of interest that you might want to draw conclusions about, and then think about the difference between that ideal population and the data available. In a brief paragraph, describe the ideal population of interest and any sampling biases (who is included and who is excluded?) or information biases (do the values represent the truth?) that might be present in the data available. Use the terminology presented in the online notes and videos. 
+
+> Population of Interest/Sampling Biases: Looking to draw conclusions about different schools.  If any schools did not participate then the full story of the data may not be told
+
+> Information Biases: Possible tampering with data from the schools to make their data look better
+
+
+## Question 4
+
+For your chosen data set, write down two interesting questions that you might be able to answer based on the data available. In addition to writing down the questions, discuss how the study design (observational data or experiment) may impact the way you can answer those questions with respect to causal inference.   
+
+> Question 1: Is there a correlation between a school's latitude and the percentage of math and statistics majors?
+
+> Question 2: What is the spread of percentage of agriculture students over the given schools?
+
+> Impact of Study Design: Since this is observational data no causal conclusions can be made
+
+
+## Question 5
+
+For your chosen data set, consider who benefits and who may be harmed from this data being collected, this data being publicly available, and the potential ways you might use the data. 
+
+> Benefits: Schools with high graduation rates and schools with more diversity (hoping that most prospective students do not look the other way) might benefit from this information being out. Kids looking at this data to choose a school also benefit
+
+> Harms: Schools with low graduation rates and schools with less diversity might benefit from this information being out
+
+
+## Question 6
+
+For your chosen data set and possible research questions from Q4, create two separate visualizations (one per question) that help answer the questions. Then, in a brief paragraph, thoroughly describe what information you gain from that visualization. You may use numerical summaries in your paragraph to fully describe your visualization. 
+
+```{r}
+CollegeScores %>%
+  ggplot(aes(x = LATITUDE, y = PCIP27)) + 
+  geom_point() + 
+  theme_minimal()
+```
+
+> This data tells us what the percentage of students majoring in math and statistics is based on what that school's latitude is.  As latitude increases, the school it is representing is further north so it is telling us where in the country the majority of the math and science majors can be found.  There does not seem to be much correlation from this graph, but there does look to be a slightly positive correlation, which could mean the farther north you go the more math majors there are.
+
+
+```{r}
+CollegeScores %>%
+  ggplot(aes(y = LOCALE)) +
+  geom_boxplot() +
+  labs(y = "Size of Schools", title = "Sizes of American Colleges/Universities") +
+  theme_minimal()
+```
+
+> This visualization displays the sizes of American Colleges and Universities by the thousands. The box plot easily lets us visualize the median school size, the IQR or 25th to 75th percentile school sizes, plus the rest of the possible sizes up to the 0 and 100th percentiles, with no outliers in this data set.  The median is a little above 20,000 with data skewed toward the larger schools.
+
+
+
+# Part 4. Self-reflection
+
+After you have finished the assignment, take 5 minutes to think and 10 minutes to free-write in reaction to the following prompts. You do not need to answer every question listed below, but use these questions to guide your writing.  
+
+Look back at the course and life goals you wrote in Part 2 and reflect on week 1 of this course.
+
+  * How are you doing as a human being right now? Are you in [survival mode](https://www.youtube.com/watch?feature=share&v=KoqaUANGvpA&app=desktop)? Which of your needs are not being met?
+  * What did you learn this week? Does the work above reflect your learning?
+  * What was the biggest obstacle for your learning this week?
+  * What did you do this week that moved you towards your course and life goals? 
+  * What might you do differently next week? What do you need (from instructor, others, yourself) to do that next week?
+  * Evaluate your project work (Part 3) with respect to the provided rubric. Do you think it meets expectations? Does it exceed expectations?
+  * Evaluate your course engagement with respect to the provided rubric. Do you think it meets expectations? Does it exceed expectations?
+
+> This week we learned some of the basics about statistics, including different types of variables, quantitative and categorical, and how to represent each tyope of variable. The biggest obstacle was just getting comfortable with my breakout groupmates and gettig to a point where I could share my ideas easily, something that I have been able to achieve as we have had more breakout sessions. For quantitative variables we want histograms or box plots for the most part while categorical variables are usually represented by bar plots, wither side by side or stacked, and sometimes pie charts, which are usually cautioned against. I feel as if I have been engaged in this course at least to if not above expectations through rngagement in breakout groups and completeion of assignments.
+
+
+
+# Part 5. Partner Check in
+
+During this time of social distancing, we need to be proactive in initiating and maintaining connections with others. To that end, you will be paired with another student in the class to do an informal weekly check-in with each other. You may do this over email, on Zoom, or from > 6 feet apart, and it doesn't need to be long. This provides you an opportunity to connect with someone and support one another during this time. 
+
+Suggestions: Share a joy and a challenge of this past week. Share a question you've had this week. 
+
+All you need to report here is whether or not you were able to connect with your partner. 
+
+>"Checked In"
+
+

@@ -1,0 +1,326 @@
+---
+title: "HW2"
+subtitle: "Section 6"
+author: "Joe Margolis"
+date: "Due: Friday, November 13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+#install.packages('dplyr','readr','ggplot2')
+library(dplyr) 
+library(readr)
+library(ggplot2)
+#add library statements for other packages you may need (e.g., ggmosaic, broom, NHANES)
+```
+
+# Instructions
+
+This assignment should be submitted on Moodle by **11:59pm CDT on Friday, November 13**. You are welcome to work together on the homework; however, what you submit should be *your* words and *your* code, so we recommend writing it up individually. 
+
+To complete your assignment, please follow these steps: 
+
+0. **Download R and RStudio (if you haven't already).** See the *R and RStudio* section on Moodle for installation links and videos with step-by-step installation instructions. If you're having issues with this, you'll need to reach out to your instructor and/or come to office hours, so plan accordingly!
+
+1. **Download `hw2.Rmd` from Moodle and save it some place on your computer that you can easily find again.** We strongly encourage you to create a new folder dedicated to homework assignments for this class. See the *File Structure and Organization* video on Moodle for tips on how to do this.
+
+2. **Make sure that the file you downloaded is called `hw2.Rmd` and not `hw2.Rmd.txt`.** The latter often happens when you use Safari on a Mac---try downloading the file using a different browser (e.g., Chrome) instead, or edit the file name (as explained in the *File Structure and Organization* video).
+
+3. **Open `hw2.Rmd` in RStudio.** See the *Intro to R and RStudio*, *R Data Types*, and *R Error Messages and Troubleshooting* videos. 
+
+4. **Update the section number and author** on the third and fourth lines of the file.
+
+5. **Make sure you've already installed the `dplyr`, `readr`, `ggplot2`, and `broom` packages.** Open the `Packages` panel (usually in the bottom right corner) to see the list of all packages that are already installed. Look to see if `dplyr`, `readr`, `ggplot2`, and `broom` are listed here. If they're on this list, that means they're already installed and you're good to go.  If any packages are missing from this list, type `install.packages('packagename')` in the *Console* (usually in the bottom left corner) and hit enter. See the *R Packages* video.
+
+6. **Try *Knitting* your document:** click the `Knit` button at the top of this screen (look for yarn and needle). See the *Intro to RMarkdown* video. A dialogue box may pop up asking you if you want to install some packages: click "Yes." If you encounter any error messages, get in touch with your instructor or the preceptors.  
+
+7. **Answer the questions in Parts 1--4.** Click `Knit` occasionally along the way to make sure everything looks okay.
+
+8. Once you're done with Parts 1--4, **click `Knit` one final time.** This will turn your R Markdown document into a nicely formatted HTML file. 
+
+9. **Look at the HTML file to make sure it looks like you want it to**: graphs appearing, no error messages, no data print out that lasts 50 pages, etc.
+    
+10. Once your HTML file pops up and you've checked that it looks like what you want, **click `Open in Browser` and then Print and select "Save as pdf".** 
+
+11. **Turn in two files to Moodle:** this `.Rmd` file, and the knitted `.pdf` version you generated in Step 10.
+
+
+
+# Part 1. Revise Project based on Feedback
+
+In this part, you will have the opportunity to update, revise, and address the feedback that you received on HW1. Note that the questions below may differ slightly from the questions that we asked on HW1: please **read the questions carefully**, and **do not simply copy/paste answers from HW1** into this assignment unless you have confirmed that the question is exactly the same.  
+
+
+## Question 1 (Load Data)
+
+Look through the information for the possible project data sets on Moodle. Choose one data set to work with. Use the code chunk provided below to read your chosen data set into R, and look at the `head()` of the data set (i.e., the first six rows). 
+
+*You can change your mind about the data set from last week, but after this week, you'll stick with this same data set for the remaining weekly assignments. So, make sure to choose a data set that seems interesting to you!*
+
+```{r}
+CollegeScores <- read_csv("Scorecard.csv")
+head(CollegeScores)
+```
+
+
+## Question 2 (Context)
+
+For your chosen data set, describe how many cases are in the data set, and explain what the cases represent. Next, describe how many variables are present in the data set, and provide a general summary of what the variables represent (e.g., demographic information, socioeconomic indicators, measures of physical health, etc.). Finally, use the information provided in the data codebooks to describe the further context surrounding the data (where, when, how, by whom, and why were these data collected?). 
+
+> Who (Cases): There are 3,676 cases which each represent a different college or university.
+
+> What (Variables): There are 93 variables which each represent a different score or something that people might look at for schools including the location of the school, the amount of kids taking certain majors, and the demographics of the school.
+
+> Where: Colleges and Universities in the United States and territories of the U.S.
+
+> When: The data was last updated June 1, 2020.
+
+> How: This data came from federally reported information from schools, information of student loans and financial aide, and tax information from the schools.
+
+> By whom: The data was collected by the U.S Department of Education and the Institute for Education and Professional Development (IEPD).
+
+> Why: To give information about schools to prospective students.
+
+
+Next, describe how this data context may impact the way that you can analyze these data and/or what conclusions you might be able to draw. You are providing warnings or reminders to yourself of important issues as you analyze the data. (e.g., If you are working with dollar amounts in the past, note that the purchasing power of a dollar changes over time. If some variables are only collected on a subset of the cases, this limits your conclusions.)
+
+>   The data all comes from very reputable sources so that is not an issue with how the data is viewed, but since the data is from an observational study and not an experiment, no finite causal conclusions can be made. 
+
+
+## Question 3 (Sampling, Study Design)
+
+For your chosen data set, describe the sampling methods (how the sample was chosen) and study design (observational study vs. experiment). 
+
+> Sampling methods: The sample was chosen by taking all the colleges and universities in the United States and territories of the United States that were willing to release their information, along with attaining the tax records and financial aide from all those same schools. 
+
+> Study design: This is an observational study.
+
+
+Next, describe how the sampling methods and study design may impact the way you can analyze these data and/or what conclusions you might be able to draw. (e.g., Is the sample representative of your target population? How might you need to adjust your target population due the sampling method? If you are looking at observational data, what confounding variables might you need to consider?)
+
+>   This sample is representative of the target population with 3,676 schools accounted for which is a very large portion of the total number of schools in America which is a little over 4,000.  Those missing schools should be accounted for slightly though as it is likely a school that was not willing to release there data has poor numbers that could negatively affect the data, therefore the data may be slightly boosted.  Therefore a possible confounding variable is schools that decided to participate in the study v.s. those who did not. Another possible confounding variable is when each school submitted their data as while the website with the data last updated June 1, 2020, it is unlikely that all schools last updated their data at the same time. 
+
+
+## Question 4 (Bias)
+
+For your chosen dataset, describe any sampling biases (who is included and who is excluded?) or information biases (do the values represent the truth?) that might be present in the available data.
+
+> Sampling biases: Only including American schools in the data can be harmful to our target audience who may want to go to a school outside of America.
+
+> Information biases: Non-response bias is a possible issue with the data as schools that did not respond likely have data that represents their school poorly, therefore leaving potentially inflated data for us.
+
+
+Next, describe how these biases may impact the way that you can analyze these data and/or what conclusions you might be able to draw. (e.g., Even if you analyze these data, what limitations might there be in how we can generalize results to our target population of interest?)
+
+>   The sampling bias that comes from only covering schools in America only impacts the way we analyze the data because we must look at the data in  the lens of American schools and not do any analysis about what this could mean for foreign schools or schools in general.  The non-response bias forces us to remember that there could be possible inflation of the data towards values that would benefit the schools since it is likely that the schools that did not participate in the study did so in order to protect them from people seeing data that put the school in a negative light.  Still with such a large amount of data given it should not take away too much from any analysis done, but should instead just be an idea to think about and take any analysis with slight skepticism.
+
+
+## Question 5 (Benefits, Harms)
+
+For your chosen data set, consider who benefits and who may be harmed from these data being collected, these data being publicly available, and the potential ways that you might use the data. When considering harms and benefits, we think about how the data were collected (how questions were phrased, what options were available, for example, asking for binary gender harms and excludes individuals who do not identify with binary gender), privacy, confidentiality, and model predictions. Predictions can be used to target individuals due to proxy information that does not necessarily reflect their personal experience.
+
+> Benefits: The benefits of this data is first of all that the data is accurate and can be trusted.  The data also covers an insanely large range of variables, with 93 different variables total, to really get a full idea of what the school is like through its data.
+
+> Harms: Some harmful information about the data comes from using of binary genders and singular race categories, forcing kids to choose a category they may not necessarily associate with, potentially making the data not useful to certain prospective students.  
+
+
+
+
+# Part 2. New Project Tasks
+
+## Question 1 (Research Question #1)
+
+For your chosen data set, design a research question about a quantitative outcome (Y variable) and a quantitative explanatory variable (X). *If you already had a research question on HW1 involving two quantitative variables, you can use that again here. Otherwise, you will need to come up with a new question.*
+
+> Research question 1: Is there a relationship between a school's location and their median income six years after enrollment in their school?
+
+
+## Question 2 (Visualization #1)
+
+Create a visualization that helps answer your first research question. In a brief paragraph, thoroughly describe what information you gain from this visualization. You may use numerical summaries in your paragraph to fully describe your visualization.
+
+```{r summarize-quant-quant}
+CollegeScores %>%
+  ggplot(aes(x = LATITUDE, y = MD_EARN_WNE_P6)) + 
+  geom_point() + 
+  labs(x = "Latitude", y = "Median Income of Student 6 Years After Enrollment (USD)", title = "Expected Income vs. North/South Location in America") +
+  theme_minimal()
+```
+
+>   This data displays a weak but slightly positive relationship between Latitude and the median income of the students six years after enrollment with higher latitudes meaning the school is further north.  The majority of median incomes, regardless of location fall between about $23,000 and $50,000 per year. There are a few Latitude outliers that below the data set which are representing schools in Hawaii and American territories like Puerto Rico and Guam, along with outliers of high latitude that represent Alaskan schools.  There are also a few schools that posted extremely high outliers for median earnings after 6 years that could pull any overall mean values for income up. 
+
+
+## Question 3 (Model #1: Creation)
+
+Write out notation for a simple linear regression model that addresses your first research question (replace $X$ and $Y$ with words in the equation below): 
+
+$$E[Median Income of Student 6 Years After Enrollment | Latitude] = \beta_0 + \beta_1Latitude$$
+
+>   This model has the ability to take the latitude value of each school, which tells us how far north or south the school in located, and then will multiply that by whatever slope coefficient results from the data set for our least squares line, then adds it with the intercept coefficient to give us a least squares line that can predict, based on the data, the median income of students six years after enrollment.
+
+## Question 4 (Model #1: Fit, Present Estimates)
+
+Fit that model to the data, and print out the coefficient estimates:
+
+```{r linear-model-1}
+mod <- lm(MD_EARN_WNE_P6 ~ LATITUDE, data = CollegeScores)
+summary(mod)
+```
+
+
+## Question 5 (Model #1: Standard Interpretation)
+
+Interpret the slope and intercept of your model using full, good sentences (see the grading rubric for requirements for interpretations).
+
+> Intercept: The average median income of a student 6 years after enrollment for a school with a latitude of 0, or on the equator, is $16,405.13.
+
+> Slope: The average difference in median income 6 years after enrollment between a school with a latitude of 1 degree greater than the another school is $391.77
+
+
+## Question 6 (Model #1: Check Conditions)
+
+Does you fitted model meet all linear model conditions? Provide graphical and/or numerical evidence to support your response.
+
+```{r check-conditions}
+augment(mod) %>%
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  labs(x = "Fitted Value", y = "Residuals") +
+  theme_minimal()
+```
+
+> Straight enough: The data seems to show a somewhat straight relationship
+
+> Equal spread: There seems to be much more variance above the residual line than there is below.
+
+> Outliers: There are a few outliers where the median income is much greater than any other schools.
+
+> Takeaway message: This model is most likely not the best representation of the data becayse it has a very low r-squared value of 0.0447.
+
+
+## Question 7 (Model #1: Transformations, Sensitivity Analysis)
+
+Based on your answers to Question 6, above, discuss whether transformations might be required.
+
+- If there is clear curvature, describe a few appropriate power transformations that would be reasonable to try, **but do not implement them**.
+- If you see neither a curved nor a straight enough relationship, power transformations will not help make the relationship straighter. If this is the case, discuss the **possibility** of transforming your quantitative explanatory variable into a categorical variable, but do not implement this yet.
+
+>   Since there looks to be some slight curvature a possible transformation is to center the latitude data.  This would make sense because it would put more emphasis on the latitude values being used in the data.  Right now the linear model stretches all the way to a point of 0 latitude which would represent a school on the equator, but that is not useful for the analysis being done for American schools, an issue that centering the data could help with.
+
+
+Based on your answers to Question 7 above, discuss whether sensitivity analyses might be required. If so, describe a sensitivity analysis that would be appropriate to perform, **but do not implement this analysis**.
+
+>   It may be useful to focus in on a specific type of institution ie. universities, Junior Colleges, HBCU, etc. in order to remove some of the ouliers from the data the likely come from schools of specific job industries in order to get a more noticeable and analyzable plot that a model can be fitted to.
+
+## Question 8 (Model #1: Evaluation)
+
+Is your model a "good" model? Provide graphical and/or numerical evidence to support your response.
+
+```{r evaluate}
+glance(mod)
+```
+
+> $R^2$: 0.04505855
+
+> Residual standard error: 10120 on 3335 degrees of freedom
+
+> Takeaway message: This is an extremely poor model for my data
+
+
+
+
+## Question 9 (Research Question #2)
+
+For your chosen data set, now design a research question involving the same quantitative outcome (Y variable) that you've been using above and a ***categorical*** explanatory variable (X).
+
+> Question 2: Is there a relationship between the degree of urbanization of the town that a school is in and the median income of their students after enrollment?
+
+
+## Question 10 (Visualization #2)
+
+Create a visualization that helps answer your second research question. In a brief paragraph, thoroughly describe what information you gain from that visualization. You may use numerical summaries in your paragraph to fully describe your visualization.
+
+```{r summarize-quant-cat}
+CollegeScores <- CollegeScores %>% mutate(LOCALE.new = case_when(
+  LOCALE %in% 11:13 ~ "City", 
+  LOCALE %in% 21:23 ~ "Suburb",
+  LOCALE %in% 31:33 ~ "Town",
+  LOCALE %in% 41:43 ~ "Rural"))
+
+CollegeScores %>%
+  ggplot(aes(x = factor(LOCALE.new), y = MD_EARN_WNE_P6)) +
+  geom_boxplot() +
+  labs(x = "Type of Town School is Located in", y = "Median Income Six Years After Enrollment (USD)", title = "Median Income Based on Type of Town the School is Located In") +
+  theme_minimal()
+
+CollegeScores %>% group_by(LOCALE.new) %>% summarise(m = median(MD_EARN_WNE_P6, na.rm=T), I = IQR(MD_EARN_WNE_P6, na.rm=T))
+```
+
+>   One consistent theme of schools from each type of location is that all the data is skeweed right, with the majority of their outliers falling in an outlier of a higher median income six years after enrollment as opposed to lower.  The data shows that schools in suburbs have the highest median income with a median of $30,600, while cities have a very close second highest median of $30,000.  Rural colleges have the lowest median income at just $25,300 six years after enrollment.  Not surprisingly though the rural and small towns show a much smaller spread than the cities and suburbs with IQRs of $6,750 and $8,850 repectively, compared to the suburban and city IQRs of $12,225 and $12,900, which makes sense since those areas likely have a much wider range of school types compared to small areas.
+
+
+## Question 11 (Model #2: Creation)
+
+Write out notation for a linear model that addresses your second research question (replace $...$ with variable names and $\beta$s): 
+
+$$E[Median Income of Student 6 Years After Enrollment| Rural, Suburb, Town] = \beta_0 + \beta_1Rural, + \beta_2Suburb + \beta_3Town$$
+
+>   This works because each type of location is represented in the model.  The intercept $\beta_0$ will be the median price of a school in a city. Then if the school is in a rural are that will be flagged and the $\beta_1$ coefficient, which represents the average difference in median income six years after enrollment between a school in a rural area and a school in a city, will be added to the intercept to give the expected median income of schools in rural areas. $\beta_2$ and $\beta_3$ do the same for schools in suburbs and towns respectively, covering the expected median incomes for studentts six years after enrollment in each type of location.
+
+
+## Question 12 (Model #2: Fit, Present Estimates)
+
+Fit that model to the data and print out the coefficient estimates:
+
+```{r linear-model-2}
+mod2 <- CollegeScores %>% 
+  with(lm(MD_EARN_WNE_P6 ~ LOCALE.new))
+
+mod2 %>%
+  coef()
+```
+
+
+## Question 13 (Model #2: Indicator Interpretation)
+
+Interpret the slope(s) and intercept of your model using full, good sentences (see the grading rubric for requirements for interpretations).
+
+> Intercept: The intercept of $32,540..0645 represents the average median income six years after enrollment of students who went to schools in cities
+
+> Slope(s): The LOCALE.newRural coefficient of $-6,336.3289 represents the average difference in median income six years after enrollment between students who went to rural schools and students who went to schools in cities. The LOCALE.newSuburb coefficient of $-771.5863 represents the average difference in median income six years after enrollment between students who went to suburban schools and students who went to schools in cities. The LOCALE.newTown coefficient of $-2,546.7748 represents the average difference in median income six years after enrollment between students who went to schools in towns and students who went to schools in cities.
+
+
+
+# Part 3. Self-reflection
+
+After you have finished the assignment, take 5 minutes to think and 10 minutes to free-write in reaction to the following prompts. You do not need to answer every question listed below, but use these questions to guide your writing.  
+
+Look back at the course and life goals you wrote in HW1, and reflect on week 2 of this course.
+
+  * How are you doing? Which of your needs are not being met?
+  * What did you learn this week? Does the work above reflect your learning?
+  * What was the biggest obstacle for your learning this week?
+  * How is working on the group activities? What group roles do you feel comfortable with?
+  * What did you do this week that moved you towards your course and life goals? 
+  * What might you do differently next week? What do you need (from instructor, others, yourself) to do that next week?
+  * Evaluate your project work (Parts 1 and 2) with respect to the provided rubric. Do you think it meets expectations? Have you mastered any of the learning objectives yet? 
+  * Evaluate your course engagement with respect to [the provided rubric](https://docs.google.com/spreadsheets/d/1p0vvK6UkGs4NNzALAZWpUJ9VCH2Raxt5GVkYyeihmv0/edit?usp=sharing). Do you think it meets expectations? Does it exceed expectations?
+
+>   This week on thing we learned about was how to transform data to be able to fit a linear model more easily and also more accurately represent the context that the data is in.  The work above somewhat reflects that because, while we were not asked to actually transform the data yet, I gave some ideas on how to transform my data for the two quantitative variable question to more accurately represent the data I am trying to analyze.  Along with that we also learned about indicator variables and how to make models for categorical data.  This was represented much more in this assignment as it was necessary for me to create indicator variables for the location of schools to be able to create side by side box plots and a model of the data.
+  On this project so far, I believe I have met, if not exceeded expectations to this point. The biggest issue for me is ensuring that I am formatting my code correctly so that it knits in a way that is easy to read and understand, but I believe I am improving by using the process of continuously knitting the document as I work. On that note I believe that I am meeting expectations in class too by doing the video notes and the textbook notes and participating in the breakout rooms to the best of my ability.
+
+
+
+# Part 4. Partner Check in
+
+During this time of social distancing, we need to be proactive in initiating and maintaining connections with others. To that end, you will be paired with another student in the class to do an informal weekly check-in with each other. You may do this over email, on Zoom, or from > 6 feet apart, and it doesn't need to be long. This provides you an opportunity to connect with someone and support one another during this time. 
+
+Suggestions: Share a joy and a challenge of this past week. Share a question you've had this week. 
+
+All you need to report here is whether or not you were able to connect with your partner. 
+
+> KEEP RELEVANT TEXT (AND DELETE THE REST): "Checked In" 
+
+

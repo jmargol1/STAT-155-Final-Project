@@ -1,0 +1,558 @@
+---
+title: "HW6"
+subtitle: "Section 6"
+author: "Joe Margolis"
+date: "Due: Friday, December 11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+# knitr::opts_chunk$set(eval = FALSE)
+library(dplyr) 
+library(readr)
+library(ggplot2)
+library(broom)
+library(ggmosaic)
+source('ggavplot.R')
+devtools::install_github("haleyjeppson/ggmosaic")
+# add library statements for other packages you may need
+```
+
+# Instructions
+
+This assignment should be submitted on Moodle by **11:59pm CST on Friday, December 11**. You are welcome to work together on the homework; however, what you submit should be *your* words and *your* code, so we recommend writing it up individually. 
+
+To complete your assignment, please follow these steps: 
+
+1. Download `hw6.Rmd` from Moodle and save it some place on your computer that you can easily find again.
+
+2. Make sure that the file you downloaded is called `hw6.Rmd` and not `hw6.Rmd.txt`.
+
+3. Open `hw6.Rmd` in RStudio.
+
+4. Update the section number and author on the third and fourth lines of the file.
+
+5. Make sure you've already installed the `dplyr`, `readr`, `ggplot2`, `broom`, and `mosaic` packages.
+
+6. Try *Knitting* your document: click the `Knit` button at the top of this screen (look for yarn and needle). 
+
+7. Answer the questions in Parts 1--4. Click `Knit` occasionally along the way to make sure everything looks okay.
+
+8. Once you're done with Parts 1--4, click `Knit` one final time. This will turn your R Markdown document into a nicely formatted HTML file. 
+
+9. Look at the HTML file to make sure it looks like you want it to: graphs appearing, no error messages, no data print out that lasts 50 pages, etc.
+    
+10. Once your HTML file pops up and you've checked that it looks like what you want, click `Open in Browser` and then Print and select "Save as pdf".
+
+11. Turn in two files to Moodle: this `.Rmd` file, and the knitted `.pdf` version you generated in Step 10.
+
+
+
+
+# Part 1. New Project R Code Tasks
+
+This week, we're first going to have you complete model selection and choose your final models, and then you'll work on writing everything up in the final report document. This Rmd will include all of the R code but you will put all of your text in the Final Report Google Doc. 
+
+## Step 1 (Load Data)
+
+Use the code chunk provided below to read your data set into R. *You should use the same dataset you used in HW2--HW5.* Then, perform any transformations and/or filtering that you will need for your regression models. 
+
+```{r load-data}
+CollegeScores <- read_csv("Scorecard.csv")
+head(CollegeScores)
+
+CollegeScores <- CollegeScores %>%
+  left_join(data.frame(region = state.region, STABBR = state.abb))
+
+CollegeScores <- CollegeScores %>%
+  mutate(predegree = as.factor(PREDDEG))
+CollegeScores <- CollegeScores %>%
+  mutate(degree = recode(predegree, '1' = "Certificate", '2' = "Associate", '3' = "Bachelors"))
+
+CollegeScores <- CollegeScores %>%
+  mutate(carnegieSize = as.factor(CCSIZSET))
+
+CollegeScores <- CollegeScores %>%
+  mutate(raceSchool = (HBCU + PBI + ANNHI + TRIBAL + AANAPII + HSI + NANTI) > 0)
+
+CollegeScores<- CollegeScores %>%
+  mutate(WageCat = cut(MD_EARN_WNE_P6, breaks=c(9100, 24600, 29300, 35900, 120500), labels=c("Low Quartile Wage ($9100-24600)","Low-Mid Quartile Wage ($24600-29300)","High-Mid Quartile Wage($29300-35900)","High Quartile Wage ($35900-120500")))
+
+CollegeScores %>%
+  count(degree)
+
+CollegeScores %>%
+  count(region)
+
+```
+
+
+
+## Step 2 (Add Variables to Linear Regression Model)
+
+Consider your "best" multiple linear regression model from HW3 and think about at least two additional explanatory variables that you would like to add to that model. Fit this larger model. 
+
+```{r fit-larger-linear-model}
+lm.mod.full <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + UGDS + TUITFTE))
+```
+
+
+
+## Step 3 (Hypothesis Testing for Linear Regression Coefficients)
+
+Considering this new, larger multiple linear regression model, use hypothesis testing for each individual slope coefficient to consider the evidence you have in support of including those variables in the model. Consider whether some of these variables may not have REAL relationships with the outcome after accounting for the other variables. 
+
+```{r hypothesis-testing-larger-linear-model}
+tidy(lm.mod.full)
+```
+> Based on a significance threshold of 0.05, all of these variables show a small enough p-value to display a significant relationship between the variable and the median wage earned six years after enrollment.
+
+## Step 4 (Compare Nested Linear Models)
+
+Now fit a model without some of those variables in `lm.mod.full` that may not have REAL relationships after accounting for the other variables. Use a nested hypothesis test to compare `lm.mod.full` with a smaller model, `lm.mod.sub`. The null hypothesis is that the smaller model is correct. Consider whether you have evidence to reject that hypothesis in favor of the full model (`lm.mod.full`). 
+
+```{r compare-nested-linear-models}
+lm.mod.sub <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + TUITFTE))
+
+
+anova(lm.mod.full, lm.mod.sub)
+```
+
+
+
+## Step 5 (Select a Final Linear Regression Model)
+
+Using the tools available to you (residual plots, R-squared, adjusted R-squared, standard deviation of residuals, hypothesis testing, causal diagrams), fit a variety of models and choose one final model. Be systematic in your process as you'll need to describe your model selection process and justify your final model. (Note: for mastery of the Inference > Model Selection objective (see Final Grading Rubric), you must use at least 3 of these model selection tools.)
+
+```{r compare-linear-models}
+mod1 <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree))
+mod2 <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + (region * degree)))
+
+
+lm.mod.full %>% 
+  ggAVPLOTS()
+
+lm.mod.sub %>%
+  ggAVPLOTS()
+
+mod1 %>%
+  ggAVPLOTS()
+
+mod2 %>%
+  ggAVPLOTS()
+
+```
+>Added Variable Plots for all of the variables without interaction show that all of the variables display a patterned slope and all seem to have a relationship with the median wage earned six years after enrollment from that school.  There is no sign of redundancy under any of the variables displaying that all variables should likely be included
+
+>The added variable plot for the interaction variables of region and degree show redundancy for the region variables and the interaction variables, giving all the cusal effect to the degree variable
+
+```{r}
+summary(mod1)
+confint(mod1)
+
+summary(mod2)
+confint(mod2)
+
+summary(lm.mod.full)
+confint(lm.mod.full)
+
+summary(lm.mod.sub)
+confint(lm.mod.sub)
+```
+> The highest r-squared value is the lm.mod.full function with an r-squared value of 0.3219
+> The lowest residual standard error is also in the full model function of 8,420 on 3,254 degrees of freedom meaning that it has the lowest average variance from the predicted value by the model
+> All of the variables, besides in the interaction model, show a p-value below the significance threshold of 0.05 and have confidence intervals that do not contain 0, pointing towards likely relationship between all the variables and the median wage earned 6 years after enrollment.
+
+```{r final-linear-model}
+final.lm.mod <-  CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + UGDS + TUITFTE))
+
+tidy(final.lm.mod) #you'll need these estimates
+confint(final.lm.mod) #you'll need these confidence intervals
+glance(final.lm.mod) #you'll need these model evaluation criteria
+```
+
+## Step 6 (Add Variables to Logistic Regression Model)
+
+Now consider your multiple logistic regression model from HW4 and think about at least two additional explanatory variables that you would like to add to that model. Fit this larger model. 
+
+```{r fit-larger-logistic-model}
+glm.mod.full <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree + region + UGDS, family = binomial))
+```
+
+
+## Step 7 (Hypothesis Testing for Logistic Regression Coefficients)
+
+Considering this new, larger multiple logistic regression model, use hypothesis testing for each individual slope coefficient to consider the evidence you have in support of including those variables in the model. 
+
+```{r hypothesis-testing-larger-logistic-model}
+tidy(glm.mod.full)
+```
+> All p-values fall below the significance threshold of 0.05, therefore it shows that all variables should probably be kept.
+
+
+## Question 8 (Compare Nested Logistic Models)
+
+Now fit a model without some of those variables in `glm.mod.full` that may not have REAL relationships after accounting for the other variables. Use a nested hypothesis test to compare `glm.mod.full` with a smaller model, `glm.mod.sub`. The null hypothesis is that the smaller model is correct. Consider whether you have evidence to reject that hypothesis in favor of the full model (`glm.mod.full`). 
+
+```{r compare-nested-logistic-models}
+glm.mod.sub <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree + UGDS + (region - region), family = binomial)) #Region-region part is to make sure it is using datasets of the same size
+
+anova(glm.mod.full, glm.mod.sub, test='LRT')
+```
+
+
+
+
+## Question 9 (Select a Final Logistic Regression Model)
+
+Using the tools available to you (hypothesis testing, causal diagrams, predicted probability boxplots, false positive and false negative rates, accuracy), fit a variety of models and choose one final model. Be systematic in your process as you'll need to describe your model selection process and justify your final model. (Note: for mastery of the Inference > Model Selection objective (see Final Grading Rubric), you must use at least 3 of these model selection tools.)
+
+```{r compare-logistic-models}
+logmod1 <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree, family = binomial))
+
+
+
+logmod1 %>%
+ augment(type.predict = 'response')
+
+logmod1 %>%
+  augment(type.predict = 'response') %>%
+  ggplot(aes(y = .fitted, x = raceSchool)) + 
+  geom_boxplot() + 
+  ylab('Predicted Probability of Being a Minority Serving Institution') + 
+  xlab('Actual Type of School (False = Minority Serving Institution, True = Regular University)') + 
+  theme_classic()
+  
+logmod1 %>%
+  augment(type.predict = 'response') %>%
+  mutate(predictRaceSchool = .fitted >= 0.22) %>%
+  count(raceSchool, predictRaceSchool)
+
+
+
+glm.mod.full %>%
+ augment(type.predict = 'response')
+
+glm.mod.full %>%
+  augment(type.predict = 'response') %>%
+  ggplot(aes(y = .fitted, x = raceSchool)) + 
+  geom_boxplot() + 
+  ylab('Predicted Probability of Being a Minority Serving Institution') + 
+  xlab('Actual Type of School (False = Minority Serving Institution, True = Regular University)') + 
+  theme_classic()
+
+glm.mod.full %>%
+  augment(type.predict = 'response') %>%
+  mutate(predictRaceSchool = .fitted >= 0.23) %>%
+  count(raceSchool, predictRaceSchool)
+
+
+glm.mod.sub %>%
+ augment(type.predict = 'response') 
+
+glm.mod.sub %>%
+  augment(type.predict = 'response') %>%
+  ggplot(aes(y = .fitted, x = raceSchool)) + 
+  geom_boxplot() + 
+  ylab('Predicted Probability of Being a Minority Serving Institution') + 
+  xlab('Actual Type of School (False = Minority Serving Institution, True = Regular University)') + 
+  theme_classic()
+
+  
+glm.mod.sub %>%
+  augment(type.predict = 'response') %>%
+  mutate(predictRaceSchool = .fitted >= 0.23) %>%
+  count(raceSchool, predictRaceSchool)
+
+```
+> logmod1: False Positive: 1081/2614 = 0.41
+False Negative: 269/723 = 0.37
+True Positive: 454/723 = 0.63
+True Negative: 1533/2614 = 0.59
+Accuracy: 1987/3337 = 0.595
+
+>glm.mod.full: False Positive: 759/2585 = 0.29
+False Negative: 249/677 = 0.37
+True Positive: 428/677 = 0.63
+True Negative: 1826/2585 = 0.71
+Accuracy: 2254/3262 = 0.691
+
+>glm.mod.sub: False Positive: 787/2585 = 0.30
+False Negative: 257/677 = 0.38
+True Positive: 420/677 = 0.62
+True Negative: 1798/2585 = 0.70
+Accuracy: 2218/3262 = 0.680
+
+```{r final-logistic-model}
+final.glm.mod <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree + UGDS, family = binomial))
+
+coef(final.glm.mod) %>% exp() #you'll need these estimates
+confint(final.glm.mod) %>% exp() #you'll need these confidence intervals
+
+augment(final.glm.mod, type.predict = 'response') %>%
+  ggplot(aes(x = factor(raceSchool), y = .fitted)) + #replace ... with outcome variable name
+  geom_boxplot() +
+  labs(x = 'Type of School (False = Minority Serving, True = Normal School)', y = 'Predicted Probability of a School being a Minority Serving Institution') + 
+  theme_classic()
+```
+
+
+# Part 2. Write Final Project Report Draft
+
+Now that you have selected final linear and logistic regression models, you will write and revise your final project based on the models you selected above and the feedback you received on HW1--HW5.
+
+
+## Step 1 (Revise Introduction and Limitations)
+
+Based on the feedback you received on HW5, make adjustments and edits to the following sections on your **Final Report Google Doc**:
+
+- Introduction to Topic
+- Research Questions
+- Introduction to Data
+- Limitations
+
+
+
+## Step 2 (Update Multiple Linear Regression Section)
+
+### Variable and Sample Descriptions
+
+Considering the final linear regression model you selected above, and reflecting on any feedback you got on HW5, update the following subsections to accurately describe the variables and cases included in that final model (now in paragraph form):
+
+- Variable Descriptions
+- Sample Description
+
+
+### Visualization
+
+Create a visualization that helps address your first research question involving a quantitative outcome. This visualization should include your outcome variable as well as the two explanatory variables that are most relevant to your research question. You do not need to (and should not) include all variables that are involved in your final linear regression model in this visualization; just focus on the primary variables of interest. (If you feel that two visualizations would be more effective, that is ok too.)
+
+```{r visualize-RQ1}
+
+
+CollegeScores %>%
+  filter(!is.na(region)) %>%
+  ggplot(aes(y = MD_EARN_WNE_P6, x = degree, color = region)) +
+  geom_boxplot() +
+  labs(y = "Median Wage 6 Years After Enrollment (U.S.$)", x = "Predominant Degree Earned") +
+  theme_minimal() +
+  theme_classic()
+
+CollegeScores %>%
+  filter(!is.na(region)) %>%
+  ggplot(aes(y = MD_EARN_WNE_P6, x = UGDS, color = region)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(y = "Median Wage 6 Years After Enrollment (US$)", x = "Undergraduate Population") +
+  theme_minimal() + 
+  theme_classic()
+
+CollegeScores %>%
+  filter(!is.na(region)) %>%
+  ggplot(aes(y = MD_EARN_WNE_P6, x = TUITFTE, color = region)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(y = "Median Wage 6 Years After Enrollment (US$)", x = "Net Tuition Per Student (US$)") +
+  theme_minimal() + 
+  theme_classic()
+```
+
+Save this visual and upload it (right click - copy and paste) to your **Final Report Google Doc**. Then, in a brief paragraph, thoroughly describe what information you gain from that visualization. You may use numerical summaries in your paragraph to fully describe your visualization. 
+
+
+### Model Selection
+
+Update your *Model Selection* section to describe the process you implemented in Part 1 to select your final model: what models did you consider? what tools did you use to select your final model? Explain and justify your process.
+
+
+### Model Statement
+
+Update the equation in the *Model Statement* section to accurately reflect the **final model** you selected in Part 1. Use shortened descriptive variable names (not R variable names) so that someone who has never seen your dataset can understand it.
+
+
+### Fitted Model
+
+Use the code chunk below to print out the estimates, standard errors, p-values, and 95% confidence intervals for each of the coefficients in your final model.
+
+```{r final-fitted-linear-model}
+#you should have fit final.lm.mod in Part 1
+
+tidy(final.lm.mod) # estimates, standard errors, p-values
+confint(final.lm.mod) # confidence intervals
+```
+
+Then, add these estimates, standard errors, and confidence intervals to the table in the *Fitted Model* section of your Final Report Google Doc. 
+
+
+### Interpretations
+
+In the *Interpretations* section of your Final Report Google Doc, write a paragraph describing what you learn from the model. In this paragraph, you should interpret the estimate, 95% confidence interval, and p-value for *only the coefficient(s) of interest* (the coefficient(s) that are most relevant to your research question). Make sure to provide a takeaway message describing what you learn from this model with respect to answering your research question.
+
+
+### Model Evaluation
+
+Use the code chunk below to check whether your final linear regression model meets all linear model conditions and to assess the "goodness" of your final model. 
+
+```{r evaluate-final-linear-model}
+final.lm.mod %>% 
+  ggAVPLOTS()
+
+augment(final.lm.mod) %>%
+    ggplot(aes(x = .fitted , y =.resid)) +
+    geom_point()+
+    labs(x = 'Fitted',y = 'Residuals') +
+    theme_minimal()+
+    geom_hline(yintercept= 0, color = "red")+
+    theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1))
+    
+
+
+glance(final.lm.mod) # to evaluate goodness
+```
+
+Add any graphical evidence and numerical evidence that you produced above to your Final Report Google Doc. Then, in paragraph form, describe what you've learned about model conditions (straight enough, equal spread, no extreme outliers) and goodness (R-squared, residual standard error, redundancy), putting your conclusions in context.
+
+
+
+## Step 3 (Update Multiple Logistic Regression Section)
+
+### Variable and Sample Descriptions
+
+Considering the final *logistic* regression model you selected in Part 1, and reflecting on any feedback you got on HW5, update the following subsections to accurately describe (in paragraph form now) the variables and cases included in that final model:
+
+- Variable Descriptions
+- Sample Description
+
+
+### Visualization
+
+Create a visualization that helps address your second research question involving a binary outcome. This visualization should include your outcome variable as well as the two explanatory variables that are most relevant to your research question. As above, you do not need to (and should not) include all variables that are involved in your final logistic regression model in this visualization; just focus on the primary variables of interest. (If you feel that two visualizations would be more effective, that is ok too.)
+
+```{r visualize-RQ2}
+CollegeScores %>%
+  mutate(WageCat = cut(MD_EARN_WNE_P6, breaks=c(9100, 24600, 29300, 35900, 120500), labels=c("Low Wage ($9100-24600)","Low-Mid Wage ($24600-29300)","High-Mid Wage($29300-35900)","High Wage ($35900-120500"))) %>%
+ filter(!is.na(WageCat)) %>%
+  ggplot() + 
+  geom_mosaic(aes(x = product(raceSchool, WageCat), fill = raceSchool)) + 
+  labs(x = 'Median Wage Levels 6 Years After Enrollment',
+       y = 'Probability of being a minority serving school',
+       fill = 'Minority Serving School or Not \n(1 = True, 0 = False)'
+       ) +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
+  theme_minimal()
+
+# (and numerical summaries, if desired)
+
+```
+
+Save this visual and upload it (right click -- copy and paste) to your **Final Report Google Doc**. Then, in a brief paragraph, thoroughly describe what information you gain from that visualization. You may use numerical summaries in your paragraph to fully describe your visualization. 
+
+
+### Model Selection
+
+Update your *Model Selection* section to describe the process you implemented in Part 1 to select your final model: what models did you consider? what tools did you use to select your final model? Explain and justify your process.
+
+
+### Model Statement
+
+Update the equation in the *Model Statement* section to accurately reflect the final model you selected in Part 1. Use descriptive variable names so that someone who has never seen your dataset can understand.
+
+
+### Fitted Model
+
+Use the code chunk below to print out the exponentiated estimates, p-values, and 95% confidence intervals for each of the coefficients in your final model. 
+
+```{r final-fitted-logistic-model}
+# should have fit final.glm.mod in Part 1
+
+coef(final.glm.mod) %>% exp() # exp estimates
+confint(final.glm.mod) %>% exp() # confidence intervals
+tidy(final.glm.mod) # p-values
+```
+
+Then, add these estimates, standard errors, and confidence intervals to the table in the *Fitted Model* section of your Final Report Google Doc. 
+
+
+### Interpretations
+
+In the *Interpretations* section of your Final Report Google Doc, write a paragraph describing what you learn from the model. In this paragraph, you should interpret the exponentiated estimate, exponentiated 95% confidence interval, and p-value for *only the coefficient(s) of interest* (the coefficient(s) that are most relevant to your research question). Make sure to provide a takeaway message describing what you learn from this model with respect to answering your research question.
+
+
+### Model Evaluation
+
+Use the code chunk below to assess the "goodness" of your final model. 
+
+```{r evaluate-final-logistic-model}
+augment(final.glm.mod, type.predict = 'response') %>%
+  ggplot(aes(x = factor(raceSchool), y = .fitted)) + #replace ... with outcome variable name
+  geom_boxplot() +
+  labs(x = 'Minority Serving Institution', y = 'Predicted Probability of Being a Minority Serving School') + 
+  theme_classic()
+
+# evaluate goodness
+threshold <- 0.23 # REPLACE with chosen threshold
+
+augment(final.glm.mod, type.predict = 'response') %>%  
+  mutate(PredictOutcome = .fitted > threshold) %>%
+  count(raceSchool, PredictOutcome) %>% #replace ... with outcome variable name
+  group_by(raceSchool) %>% #replace ... with outcome variable name
+  mutate(prop = n/sum(n))
+
+
+```
+
+Add any graphical evidence and numerical evidence that you produced above to your Final Report Google Doc. Then, in paragraph form, describe what you've learned about model goodness (accuracy, sensitivity, specificity, false positive rate, false negative rate), putting your conclusions in context.
+
+
+
+
+## Step 4 (Conclusion Notes)
+
+Add notes to the *General Takeaways* section of the Conclusion:
+
+- what are the take-aways from your final linear regression model? what have you learned about your first research question?
+- what are the take-aways from your final logistic regression model? what have you learned about your second research question?
+
+Then, add notes to the *Limitations* section of the Conclusion:
+
+- what are the limitations of your final linear regression model?
+- what are the limitations of your final logistic regression model? 
+
+
+
+
+# Part 3. Self-reflection
+
+After you have finished the assignment, take 5 minutes to think and 20 minutes to free-write in reaction to the following two prompts. You do not need to answer every question listed below, but use these questions to guide your writing. Use this opportunity to reflect on the whole course.
+
+  * Evaluate your course engagement with respect to the provided rubric. Do you think it meets expectations? What have you been doing to create a positive learning environment this module? 
+  
+  * Evaluate your project work with respect to the provided rubric. Do you think it meets expectations? Do you feel as though you mastered any of the learning objectives yet? 
+  
+
+>   Starting with my course engagement in this class, I do feel like I have met, if not exceeded the rubric expectations.  I feel like I have worked hard to consistently contribute to my breakout group conversations, at least as a voice to continue conversation even when I have found myself struggling with some of the content sections, being prepared to have my ideas corrected by others to enhance my learning and also the learning of the others in my group as, at least for me I find the best way to really learn someone is to try to explain it to someone else.  I also feel like my class attendance and completiong of checkpoints and watching the videos has also been at the expectation levels in the rubric.
+  I also feel I have met the expectations of learning objectives on this project.  I feel like I challenged myself to follow the guidelines closely and even exceed some of them, particularly in my extensive interpretations and extra visualizations.  The only issue is potentially some mis-interpretations of some of the found estimates, but that is expected to be the case in a rough draft so I feel like at this point in the assignment I have exceeded the expectations.
+
+
+
+
+# Part 4. Partner Check in
+
+During this time of social distancing, we need to be proactive in initiating and maintaining connections with others. To that end, you will be paired with another student in the class to do an informal weekly check-in with each other. You may do this over email or Zoom, and it doesn't need to be long. This provides you an opportunity to connect with someone and support one another during this time. 
+
+**Suggestions: discuss your plans for spring semester and the biggest things you learned about your learning this module, make a plan to read each other's report if you'd like** 
+
+All you need to report here is whether or not you were able to connect with your partner. If this starting to feel like a burden, let me know. 
+
+> KEEP RELEVANT TEXT (AND DELETE THE REST): "Checked In"
+

@@ -1,0 +1,365 @@
+---
+title: "FinalProjectRMarkdown"
+author: "Joe Margolis"
+date: "12/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Library Statements
+```{r}
+library(dplyr) 
+library(readr)
+library(ggplot2)
+library(broom)
+library(ggmosaic)
+source('ggavplot.R')
+# add library statements for other packages you may need
+```
+
+## Data Loading
+
+```{r load-data}
+CollegeScores <- read_csv("Scorecard.csv")
+head(CollegeScores)
+
+CollegeScores <- CollegeScores %>%
+  left_join(data.frame(region = state.region, STABBR = state.abb)) #Create new variable with states
+
+CollegeScores <- CollegeScores %>%
+  mutate(predegree = as.factor(PREDDEG))    #Quantitative to categorical
+CollegeScores <- CollegeScores %>%
+  mutate(degree = recode(predegree, '1' = "Certificate", '2' = "Associate", '3' = "Bachelors"))
+
+CollegeScores <- CollegeScores %>%
+  mutate(raceSchool = (HBCU + PBI + ANNHI + TRIBAL + AANAPII + HSI + NANTI) > 0)
+
+CollegeScores<- CollegeScores %>%
+  mutate(WageCat = cut(MD_EARN_WNE_P6, breaks=c(9100, 24600, 29300, 35900, 120500), labels=c("Low Quartile Wage ($9100-24600)","Low-Mid Quartile Wage ($24600-29300)","High-Mid Quartile Wage($29300-35900)","High Quartile Wage ($35900-120500")))
+
+CollegeScores %>%
+  count(degree)
+
+CollegeScores %>%
+  count(region)
+
+```
+
+
+
+## Create Linear Model 
+
+```{r fit-larger-linear-model}
+lm.mod.full <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + UGDS + TUITFTE))
+```
+
+
+## Look at model estimates
+
+```{r hypothesis-testing-larger-linear-model}
+tidy(lm.mod.full)
+```
+> Based on a significance threshold of 0.05, all of these variables show a small enough p-value to display a significant relationship between the variable and the median wage earned six years after enrollment.
+
+
+
+```{r compare-nested-linear-models}
+lm.mod.sub <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + TUITFTE))
+
+
+anova(lm.mod.full, lm.mod.sub) # Compare nested models
+```
+
+
+```{r compare-linear-models}
+mod1 <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree))
+mod2 <- CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + (region * degree)))
+
+# Added Variable Plots
+lm.mod.full %>% 
+  ggAVPLOTS()
+
+lm.mod.sub %>%
+  ggAVPLOTS()
+
+mod1 %>%
+  ggAVPLOTS()
+
+mod2 %>%
+  ggAVPLOTS()
+
+```
+>Added Variable Plots for all of the variables without interaction show that all of the variables display a patterned slope and all seem to have a relationship with the median wage earned six years after enrollment from that school.  There is no sign of redundancy under any of the variables displaying that all variables should likely be included
+
+>The added variable plot for the interaction variables of region and degree show redundancy for the region variables and the interaction variables, giving all the cusal effect to the degree variable
+
+```{r}
+#Numerical summaries and 95% cofidence intervals
+summary(mod1)
+confint(mod1)
+
+summary(mod2)
+confint(mod2)
+
+summary(lm.mod.full)
+confint(lm.mod.full)
+
+summary(lm.mod.sub)
+confint(lm.mod.sub)
+```
+> The highest r-squared value is the lm.mod.full function with an r-squared value of 0.3219
+> The lowest residual standard error is also in the full model function of 8,420 on 3,254 degrees of freedom meaning that it has the lowest average variance from the predicted value by the model
+> All of the variables, besides in the interaction model, show a p-value below the significance threshold of 0.05 and have confidence intervals that do not contain 0, pointing towards likely relationship between all the variables and the median wage earned 6 years after enrollment.
+
+```{r final-linear-model}
+final.lm.mod <-  CollegeScores %>%
+  with(lm(MD_EARN_WNE_P6 ~ region + degree + UGDS + TUITFTE))
+
+#Evaluate goodness of model
+tidy(final.lm.mod) 
+confint(final.lm.mod)
+glance(final.lm.mod)
+```
+
+## Create Logistic Model
+```{r fit-larger-logistic-model}
+glm.mod.full <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree + region + UGDS, family = binomial))
+```
+
+
+## Hypothesis testing for logistic models 
+
+```{r hypothesis-testing-larger-logistic-model}
+tidy(glm.mod.full)
+```
+> All p-values fall below the significance threshold of 0.05, therefore it shows that all variables should probably be kept.
+
+
+
+
+```{r compare-nested-logistic-models}
+glm.mod.sub <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree + UGDS + (region - region), family = binomial)) #Region-region part is to make sure it is using datasets of the same size
+
+anova(glm.mod.full, glm.mod.sub, test='LRT') # Compare nested logistic models
+```
+
+
+
+```{r compare-logistic-models}
+logmod1 <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree, family = binomial))
+
+
+
+logmod1 %>%
+ augment(type.predict = 'response')
+
+# Prediced Probability Boxplot
+logmod1 %>%
+  augment(type.predict = 'response') %>%
+  ggplot(aes(y = .fitted, x = raceSchool)) + 
+  geom_boxplot() + 
+  ylab('Predicted Probability of Being a Minority Serving Institution') + 
+  xlab('Actual Type of School (False = Minority Serving Institution, True = Regular University)') + 
+  theme_classic()
+  
+# Find false positive and false negatives
+logmod1 %>%
+  augment(type.predict = 'response') %>%
+  mutate(predictRaceSchool = .fitted >= 0.22) %>%
+  count(raceSchool, predictRaceSchool)
+
+
+
+glm.mod.full %>%
+ augment(type.predict = 'response')
+
+glm.mod.full %>%
+  augment(type.predict = 'response') %>%
+  ggplot(aes(y = .fitted, x = raceSchool)) + 
+  geom_boxplot() + 
+  ylab('Predicted Probability of Being a Minority Serving Institution') + 
+  xlab('Actual Type of School (False = Minority Serving Institution, True = Regular University)') + 
+  theme_classic()
+
+glm.mod.full %>%
+  augment(type.predict = 'response') %>%
+  mutate(predictRaceSchool = .fitted >= 0.23) %>%
+  count(raceSchool, predictRaceSchool)
+
+
+glm.mod.sub %>%
+ augment(type.predict = 'response') 
+
+glm.mod.sub %>%
+  augment(type.predict = 'response') %>%
+  ggplot(aes(y = .fitted, x = raceSchool)) + 
+  geom_boxplot() + 
+  ylab('Predicted Probability of Being a Minority Serving Institution') + 
+  xlab('Actual Type of School (False = Minority Serving Institution, True = Regular University)') + 
+  theme_classic()
+
+  
+glm.mod.sub %>%
+  augment(type.predict = 'response') %>%
+  mutate(predictRaceSchool = .fitted >= 0.23) %>%
+  count(raceSchool, predictRaceSchool)
+
+```
+> logmod1: False Positive: 1081/2614 = 0.41
+False Negative: 269/723 = 0.37
+True Positive: 454/723 = 0.63
+True Negative: 1533/2614 = 0.59
+Accuracy: 1987/3337 = 0.595
+
+>glm.mod.full: False Positive: 759/2585 = 0.29
+False Negative: 249/677 = 0.37
+True Positive: 428/677 = 0.63
+True Negative: 1826/2585 = 0.71
+Accuracy: 2254/3262 = 0.691
+
+>glm.mod.sub: False Positive: 787/2585 = 0.30
+False Negative: 257/677 = 0.38
+True Positive: 420/677 = 0.62
+True Negative: 1798/2585 = 0.70
+Accuracy: 2218/3262 = 0.680
+
+```{r final-logistic-model}
+final.glm.mod <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree + UGDS, family = binomial))
+
+# Exponentiated Estimates and confidence intervals for logistic models
+coef(final.glm.mod) %>% exp() 
+confint(final.glm.mod) %>% exp() 
+
+augment(final.glm.mod, type.predict = 'response') %>%
+  ggplot(aes(x = factor(raceSchool), y = .fitted)) + 
+  geom_boxplot() +
+  labs(x = 'Type of School (False = Minority Serving, True = Normal School)', y = 'Predicted Probability of a School being a Minority Serving Institution') + 
+  theme_classic()
+```
+
+
+## Linear Model Visualizations 
+
+```{r visualize-RQ1}
+
+#Side by Side boxplots (Quantitative outcome, two categorical explanatory)
+CollegeScores %>%
+  filter(!is.na(region)) %>%
+  ggplot(aes(y = MD_EARN_WNE_P6, x = degree, color = region)) +
+  geom_boxplot() +
+  labs(y = "Median Wage 6 Years After Enrollment (U.S.$)", x = "Predominant Degree Earned") +
+  theme_minimal() +
+  theme_classic()
+
+# Scatter Plot (quantitative outcome, one categorical one explanatory variable)
+CollegeScores %>%
+  filter(!is.na(region)) %>% 
+  ggplot(aes(y = MD_EARN_WNE_P6, x = UGDS, color = region)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(y = "Median Wage 6 Years After Enrollment (US$)", x = "Undergraduate Population") +
+  theme_minimal() + 
+  theme_classic()
+
+# Scatter Plot
+CollegeScores %>%
+  filter(!is.na(region)) %>%
+  ggplot(aes(y = MD_EARN_WNE_P6, x = TUITFTE, color = region)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE) +
+  labs(y = "Median Wage 6 Years After Enrollment (US$)", x = "Net Tuition Per Student (US$)") +
+  theme_minimal() + 
+  theme_classic()
+```
+
+
+
+```{r final-fitted-linear-model}
+tidy(final.lm.mod) # estimates, standard errors, p-values
+confint(final.lm.mod) # confidence intervals
+```
+
+
+
+```{r evaluate-final-linear-model}
+final.lm.mod %>% 
+  ggAVPLOTS()
+
+# Residual plot of linear model
+augment(final.lm.mod) %>%
+    ggplot(aes(x = .fitted , y =.resid)) +
+    geom_point()+
+    labs(x = 'Fitted',y = 'Residuals') +
+    theme_minimal()+
+    geom_hline(yintercept= 0, color = "red")+
+    theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1))
+    
+
+
+glance(final.lm.mod) # to evaluate goodness
+```
+
+## Logistic Model Visualization
+
+```{r visualize-RQ2}
+# Stacked bar plot (Binary outcome, Categorical explanatory)
+
+CollegeScores %>%
+  mutate(WageCat = cut(MD_EARN_WNE_P6, breaks=c(9100, 24600, 29300, 35900, 120500), labels=c("Low Wage ($9100-24600)","Low-Mid Wage ($24600-29300)","High-Mid Wage($29300-35900)","High Wage ($35900-120500"))) %>%
+ filter(!is.na(WageCat)) %>%
+  ggplot() + 
+  geom_mosaic(aes(x = product(raceSchool, WageCat), fill = raceSchool)) + 
+  labs(x = 'Median Wage Levels 6 Years After Enrollment',
+       y = 'Probability of being a minority serving school',
+       fill = 'Minority Serving School or Not \n(1 = True, 0 = False)'
+       ) +
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=1)) +
+  theme_minimal()
+
+
+
+```
+
+
+```{r final-fitted-logistic-model}
+# should have fit final.glm.mod in Part 1
+
+coef(final.glm.mod) %>% exp() # exp estimates
+confint(final.glm.mod) %>% exp() # confidence intervals
+tidy(final.glm.mod) # p-values
+```
+
+
+
+```{r evaluate-final-logistic-model}
+# Predicted Probability Boxplots
+augment(final.glm.mod, type.predict = 'response') %>%
+  ggplot(aes(x = factor(raceSchool), y = .fitted)) + #replace ... with outcome variable name
+  geom_boxplot() +
+  labs(x = 'Minority Serving Institution', y = 'Predicted Probability of Being a Minority Serving School') + 
+  theme_classic()
+
+
+# False positive/negative
+# evaluate goodness
+threshold <- 0.23 
+
+augment(final.glm.mod, type.predict = 'response') %>%  
+  mutate(PredictOutcome = .fitted > threshold) %>%
+  count(raceSchool, PredictOutcome) %>% 
+  group_by(raceSchool) %>% 
+  mutate(prop = n/sum(n))
+
+
+```

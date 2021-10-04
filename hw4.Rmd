@@ -1,0 +1,232 @@
+---
+title: "HW4"
+subtitle: "Section 6"
+author: "Joe Margolis"
+date: "Due: Saturday, November 28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+library(dplyr) 
+library(readr)
+library(ggplot2)
+library(broom)
+library(ggmosaic)
+source('ggavplot.R')
+# add library statements for other packages you may need
+```
+
+# Instructions
+
+This assignment should be submitted on Moodle by **11:59 pm CST on Saturday, November 28**. You are welcome to work together on the homework; however, what you submit should be *your* words and *your* code, so we recommend writing it up individually. 
+
+To complete your assignment, please follow these steps: 
+
+0. **Download R and RStudio (if you haven't already).** See the *R and RStudio* section on Moodle for installation links and videos with step-by-step installation instructions. If you're having issues with this, you'll need to reach out to your instructor and/or come to office hours, so plan accordingly!
+
+1. **Download `hw4.Rmd` from Moodle and save it some place on your computer that you can easily find again.** We strongly encourage you to create a new folder dedicated to homework assignments for this class. See the *File Structure and Organization* video on Moodle for tips on how to do this.
+
+2. **Make sure that the file you downloaded is called `hw4.Rmd` and not `hw4.Rmd.txt`.** The latter often happens when you use Safari on a Mac---try downloading the file using a different browser (e.g., Chrome) instead, or edit the file name (as explained in the *File Structure and Organization* video).
+
+3. **Open `hw4.Rmd` in RStudio.** See the *Intro to R and RStudio*, *R Data Types*, and *R Error Messages and Troubleshooting* videos. 
+
+4. **Update the section number and author** on the third and fourth lines of the file.
+
+5. **Make sure you've already installed the `dplyr`, `readr`, `ggplot2`, and `broom` packages.** Open the `Packages` panel (usually in the bottom right corner) to see the list of all packages that are already installed. Look to see if `dplyr`, `readr`, `ggplot2`, and `broom` are listed here. If they're on this list, that means they're already installed and you're good to go.  If any packages are missing from this list, type `install.packages('packagename')` in the *Console* (usually in the bottom left corner) and hit enter. See the *R Packages* video.
+
+6. **Try *Knitting* your document:** click the `Knit` button at the top of this screen (look for yarn and needle). See the *Intro to RMarkdown* video. A dialogue box may pop up asking you if you want to install some packages: click "Yes." If you encounter any error messages, get in touch with your instructor or the preceptors.  
+
+7. **Answer the questions in Parts 1--4.** Click `Knit` occasionally along the way to make sure everything looks okay.
+
+8. Once you're done with Parts 1--4, **click `Knit` one final time.** This will turn your R Markdown document into a nicely formatted HTML file. 
+
+9. **Look at the HTML file to make sure it looks like you want it to**: graphs appearing, no error messages, no data print out that lasts 50 pages, etc.
+    
+10. Once your HTML file pops up and you've checked that it looks like what you want, **click `Open in Browser` and then Print and select "Save as pdf".** 
+
+11. **Turn in two files to Moodle:** this `.Rmd` file, and the knitted `.pdf` version you generated in Step 10.
+
+
+
+
+# Part 1. Revise Project based on Feedback
+
+In this part, you will have the opportunity to update, revise, and address the feedback that you received on HW3. Note that the questions below may differ slightly from the questions that we asked on HW3: please **read the questions carefully**, and **do not simply copy/paste answers from HW3** into this assignment unless you have confirmed that the question is exactly the same.  
+
+## Question 1 (Load Data)
+
+Use the code chunk provided below to read your data set into R. *You should use the same dataset you used in HW3.*
+
+```{r load-data}
+CollegeScores <- read_csv("Scorecard.csv")
+head(CollegeScores)
+```
+
+## Question 2 (Edit Final Report)
+
+Based on the feedback you received on HW3, make adjustments and edits to the following sections on your **Final Report Google Doc**:
+
+- Introduction to Data
+- Limitations
+
+
+## Question 3 (Multiple Linear Regression Model Notes)
+
+We are going to pause on further developing this model this week, but we want you to write down thoughts and ideas for this linear model so that you have detailed notes for when you return to performing model selection in future weeks. These notes do not need to be in complete sentences. Based on the feedback you received on HW3, create bullet point notes in your **Final Report Google Doc** for the following sections:
+
+**Variable Descriptions:** 
+
+- write down your quantitative outcome variable and its units; note any transformations you did or want to do on that outcome variable
+- write down each of your predictor variables and their form (units if quantitative, categories if categorical); note any transformations you did or what to do on those variables
+
+**Sample Description:** 
+
+- write down any filtering that you performed for your visualization and model fitting
+- note how many rows (after filtering) have non-missing values for your outcome variable
+
+**Model Selection:**
+
+- note brief thoughts you have about improving the model: interaction term needed? what variables might you consider adding in the future? etc.
+
+
+# Part 2. New Project Tasks
+
+## Question 1 (Research Question)
+
+Write down a research question that involves an *indicator* outcome variable (it must have only 2 possible outcomes -- this indicator variable could be defined based on a categorical variable or quantitative variable) and two explanatory variables (either categorical or quantitative). This indicator outcome should be somewhat related to the quantitative outcome from Part 1, but this indicator outcome offers a different view on your research topic (it could be a binary version of the quantitative outcome you've been working with). Explain why you think this is an interesting research question and how it relates to Part 1; give us motivation for your question.
+
+
+> For people with higher median income 6 years after enrollment, are the odds more or less likely that they went to a racially centric institution?  This question is interesting because it adds another window into the investigation on equity in the college and university system in America, posing the question of whether or not the schools instituded to help bring equity to a white controlled system are actually effective and given the resources in bridging the economic gap between races. 
+
+
+
+## Question 2 (Visualization)
+
+Create a visualization that helps address your research question in P2Q1. Then, in a brief paragraph, thoroughly describe what information you gain from that visualization. You may use numerical summaries in your paragraph to fully describe your visualization. 
+
+```{r summarize-cat-outcome}
+CollegeScores <- CollegeScores %>%
+  mutate(raceSchool = (HBCU + PBI + ANNHI + TRIBAL + AANAPII + HSI + NANTI) > 0)
+
+CollegeScores <- CollegeScores %>%
+  left_join(data.frame(region = state.region, STABBR = state.abb))
+
+CollegeScores <- CollegeScores %>%
+  mutate(degree = as.factor(PREDDEG))
+
+CollegeScores<- CollegeScores %>%
+  mutate(WageCat = cut(MD_EARN_WNE_P6, breaks=c(9100, 24600, 29300, 35900, 120500), labels=c("Low Quartile Wage ($9100-24600)","Low-Mid Quartile Wage ($24600-29300)","High-Mid Quartile Wage($29300-35900)","High Quartile Wage ($35900-120500")))
+
+CollegeScores %>%
+  ggplot() + 
+  geom_mosaic(aes(x = product(raceSchool, WageCat), fill = raceSchool, color = degree)) + 
+  labs(x = 'Median Wage Levels 6 Years After Enrollment',
+       y = 'Probability of being a minority serving school',
+       fill = 'Minority Serving School or Not \n(1 = True, 0 = False)')
+```
+
+>   This visualization displays a decreasing percentage of schools for specific ethnicities as the median wage of students 6 years after enrollment at that school increases, as in the low wage group it seems that nearly 1/3 of the schools in that group are for specific ethnicities, but in the high wage groups it gets down to around only 1/6 of the schools in that group are ethnicity specific institutions.  There are also obvious outliers for median wage as displayed by the fifth bar in the graph, but the outlier schools do not show further decrease in the percentage of which are race specific schools and instead showed a slight increase from the high wage group before it. 
+
+
+## Question 3 (Multiple Logistic Regression: Model Creation)
+
+Considering the research question you posed in P2Q1, write out the notation for a multiple logistic model (replace ... with variable names and $\beta$s). Do not explore interaction terms for this model at this point.
+
+$$\log(Odds[Race Centric School |Median Wage 6 Years After Enrollment Group]) = \beta_0 + \beta_1(Low-Mid Quartile Wage) + \beta_2(High-Mid Quartile Wage) + \beta_3(High Quartile Range)$$
+
+
+## Question 4 (Multiple Logistic Regression: Fit, Present Estimates)
+
+
+```{r fit-logistic-model}
+CollegeScores <- CollegeScores %>%
+  mutate(degree = as.factor(PREDDEG))
+
+mod1 <- CollegeScores %>%
+  with(glm(raceSchool ~ MD_EARN_WNE_P6 + degree, family = binomial))
+
+mod1 %>%
+  coef() %>%
+  exp()
+```
+
+
+## Question 5 (Multiple Logistic Regression: Standard Interpretation)
+
+Interpret all of the **exponentiated** coefficients in your model using full, good sentences (see the grading rubric for requirements for interpretations).
+
+>Intercept: The intercept represents the odds of a school in the low median wage six years after enrollment group being a racially centric school is about 0.5 times as likely as it being a normally admitting college.
+WageCatLow-Mid Quartile Wage: This coefficient represents that as you move from a school in the low median wage group to a school in the Low-Mid group, the odds that a school is a racially centric school is multiplied by a factor of 0.67.
+WageCatHigh-Mid Quartile Wage: This coefficient represents that as you move from a school in the low median wage group to a school in the High-Mid group, the odds that a school is a racially centric school is multiplied by a factor of 0.37.
+WageCatHigh Quartile Wage: This coefficient represents that as you move from a school in the low median wage group to a school in the High median wage 6 years after enrollment group, the odds that a school is a racially centric school is multiplied by a factor of 0.296.
+
+
+## Question 6 (Multiple Logistic Regression: Model Evaluation)
+
+Comment on the "goodness" of your model (is it a "good" model?). Provide graphical and numerical evidence (e.g., sensitivity, specificity, false positive rate, false negative rate) to support your response.
+
+```{r evaluate-logistic-model}
+mod1 %>%
+ augment(type.predict = 'response') %>%
+ head()
+
+mod1 %>%
+  augment(type.predict = 'response') %>%
+  ggplot(aes(y = .fitted, x = raceSchool)) + 
+  geom_boxplot() + 
+  ylab('Predicted Probability of Being a Minority Serving Institution') + 
+  xlab('Actual Type of School (False = Minority Serving Institution, True = Regular University)') + 
+  theme_classic()
+
+threshold <- 0.25
+  
+mod1 %>%
+  augment(type.predict = 'response') %>%
+  mutate(predictRaceSchool = .fitted >= threshold) %>%
+  count(raceSchool, predictRaceSchool)
+```
+
+> Predicted Probability Boxplots: The boxplots say on average about 25% of the schools schould be a school with a specific racial admittance process
+
+> Chosen Probability Threshold: 0.25
+
+> False positive rate: 567/848 = 0.668
+
+> False negative rate: 442/2489 = 0.176
+
+> Accuracy: 2328/3337 = 0.7
+
+> Takeaway: This model is pretty accurate when predicting that a school is not a racially specific school, which is not surpising as the around 75% of the schools in the data set are schools with a normal admittance process open for all races.  Where this model is very poor is when it predicts that a school is a racially specific school as nearly 70% of the time it comes to that conclusion the model was incorrect.  That being said having an overall accuracy of 70% is a good sign for how good this model is, but some changes need to be made to my positive data.
+
+
+
+# Part 3. Self-reflection
+
+After you have finished the assignment, take 5 minutes to think and 10 minutes to free-write in reaction to the following prompts. You do not need to answer every question listed below, but use these questions to guide your writing.  
+
+Look back at the course and life goals you wrote in HW1, and reflect on week 4 of this course.
+
+  * How are you doing?
+  * Does the work above reflect your learning?
+  * What was the biggest obstacle for your learning this week?
+  * What might you do differently next week? What do you need (from instructor, others, yourself) to do that next week?
+  * In what ways are you are creating a positive learning environment for everyone in the class? Discuss.
+  * Evaluate your project work (Parts 1 and 2) with respect to the provided rubric. Do you think it meets expectations? Do you feel as though you mastered any of the learning objectives yet? 
+  
+
+>   I feel like I am doing well so far as this module gets over halfway through.  I feel like I have understood, for the most part, the course material with struggles mainly on interpreting added variable plots, as that is sometjing I have yet to completely grasp the skill of.  This week we learned more in depth on logistic models and interpreting their outcomes and their slopes.  This was obviously very applicable on this homework as the majority of the assignment was developing a model that could be represented logistically and give us odds outcomes as opposed to a quantitative result. It took me a bit to get the hang of wording interpretations of slope and intercept coefficient of these logistic models in a way that ensures that I am making the intended point, but I feel like I have figured it out and done it correctly on this assignment, at least meeting the expectations at this point as I work towards mastery of logistic models. I did struggle with the r coding on this section pretty heavily and this homework was definitely a struggle, but after getting some assisstance from professors I think I now have a much better understanding on how to do logistic regression in r. 
+
+
+
+# Part 4. Partner Check in
+
+During this time of social distancing, we need to be proactive in initiating and maintaining connections with others. To that end, you will be paired with another student in the class to do an informal weekly check-in with each other. You may do this over email/Slack or on Zoom, and it doesn't need to be long. This provides you an opportunity to connect with someone and support one another during this time. 
+
+**Suggestions: Share your favorite food/recipe or book.** 
+
+All you need to report here is whether or not you were able to connect with your partner. If this starting to feel like a burden, let me know. 
+
+> KEEP RELEVANT TEXT (AND DELETE THE REST): "Checked In" 
+
+
